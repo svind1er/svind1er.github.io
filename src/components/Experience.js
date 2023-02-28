@@ -34,7 +34,7 @@ class Experience extends Component {
             date={work.years}
             iconStyle={{
               background: "#AE944F",
-              color: "#fff",
+              color: "#FFEEE0",
               textAlign: "center",
             }}
             icon={<i className="fa fa-graduation-cap experience-icon"></i>}
@@ -79,7 +79,7 @@ class Experience extends Component {
             <VerticalTimelineElement
               iconStyle={{
                 background: "#AE944F",
-                color: "#fff",
+                color: "#FFEEE0",
                 textAlign: "center",
               }}
               icon={
