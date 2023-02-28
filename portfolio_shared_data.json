@@ -1,0 +1,73 @@
+{
+    "basic_info": {
+      "name": "Svindler",
+      "titles": [ "Breaking stuff💻", "Student📚", "Committing fraud💰", "I do CTFs🚩"],
+      "social": [
+        {
+          "name": "twitter",
+          "url": "https://www.twitter.com/svindlerr",
+          "class": "fab fa-twitter"
+        }
+      ],
+      "image": "svindlerpanda.jpg"
+    },
+    "skills": {
+      "icons": [
+        {
+          "name": "Linux",
+          "class": "devicon-linux-plain",
+          "level": "90"
+        },
+        {
+          "name": "bash",
+          "class": "devicon-bash-plain",
+          "level": "90"
+        },
+        {
+          "name": "Python",
+          "class": "devicon-python-plain",
+          "level": "90"
+        },
+        {
+          "name": "Photoshop",
+          "class": "devicon-photoshop-plain",
+          "level": "90"
+        },
+        {
+          "name": "After Effects",
+          "class": "devicon-aftereffects-plain",
+          "level": "90"
+        },
+        {
+          "name": "HTML 5",
+          "class": "devicon-html5-plain",
+          "level": "95"
+        },
+        {
+          "name": "CSS 3",
+          "class": "devicon-css3-plain",
+          "level": "95"
+        },
+        {
+          "name": "Java",
+          "class": "devicon-java-plain",
+          "level": "60"
+        },
+        {
+          "name": "MySql",
+          "class": "devicon-mysql-plain",
+          "level": "60"
+        },
+        {
+          "name": "PHP",
+          "class": "devicon-php-plain",
+          "level": "60"
+        },
+        {
+          "name": "C#",
+          "class": "devicon-csharp-plain",
+          "level": "60"
+        }
+      ]
+    }
+  }
