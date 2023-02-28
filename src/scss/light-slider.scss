@@ -137,7 +137,7 @@ $content-background-color: #D7CAAA;
       top: calc(50% - (0.5 * var(--control-button-height)));
       border: none;
       background-color: var(--control-button-background);
-      color: #fff;
+      color: #FFEEE0;
       cursor: pointer;
       .#{$root-element}__controls__arrow-left,
       .#{$root-element}__controls__arrow-right {
