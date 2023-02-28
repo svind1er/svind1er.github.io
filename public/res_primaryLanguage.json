@@ -1,0 +1,101 @@
+{
+    "basic_info": {
+      "description_header": "Hi",
+      "description": "💻 I mostly do cybersecurity and forensics as a hobby. I'm currently a software engineering student and I'm specializing in security subjects.",
+      "section_name": {
+        "about": "About me",
+        "projects": "Projects",
+        "skills": "Knowledge within",
+        "experience": "Timeline"
+      }
+    },
+    "projects": [
+      {
+        "title": "Rent a Car Application",
+        "startDate": "2022",
+        "description": "This was an assignment; It's a web-application built with .NET with the use of Blazor and an API. It's a simple web-application with tests in the background that allows you to rent a car, add a car to the market and view your rental history. How to install and run the web-application is in the README.",
+        "images": [
+          "images/portfolio/RentCar/carmarket.png",
+          "images/portfolio/RentCar/carrent.png",
+          "images/portfolio/RentCar/renthistory.png"
+        ],
+        "url": "https://github.com/alexanderhiof/RentCarApp",
+        "technologies": [
+          {
+            "class": "devicon-html5-plain",
+            "name": "HTML"
+          },
+          {
+            "class": "devicon-css3-plain",
+            "name": "CSS"
+          },
+          {
+            "class": "devicon-csharp-plain",
+            "name": ".NET / Swagger API"
+          },
+          {
+            "class": "devicon-sqlite-plain",
+            "name": "SQLite"
+          }
+        ]
+      },
+      {
+        "title": "Bonelab Mods Hub",
+        "startDate": "2022",
+        "description": "It was a hub for community made mods for the game Bonelab. I made one of the first working avatars and it was sought after and as people were asking for my avatar more came out with nowhere to post them. I ended up making this repo as a hub for mods before Bonelab got support from Mod.io",
+        "images": [
+          "images/portfolio/Bonelabs/kermit.png",
+          "images/portfolio/Bonelabs/kermitstats.png"
+        ],
+        "url": "https://github.com/svind1er/Bonelab-Mods",
+        "technologies": [
+          {
+            "class": "devicon-blender-original",
+            "name": "Blender"
+          },
+          {
+            "class": "devicon-unity-original",
+            "name": "Unity"
+          }
+        ]
+      },
+      {
+        "title": "Destiny 2 API Scraper (Broken)",
+        "startDate": "2021",
+        "description": "A Python script that scrapes the Destiny 2 API for new items. I ended up wanting to automate it a bit further and incorperating a twitter/discord bot, doing so it broke down and I didn't have time to fix it. Someone finished a similar project later on so I chose to discontinue it. Source code is not available due to it being broken and pretty much useless.",
+        "images": [
+          "images/portfolio/apiUpdate/d2.jpg",
+          "images/portfolio/apiUpdate/items.jpg"
+        ],
+        "url": "https://github.com/svind1er/api-updates",
+        "technologies": [
+          {
+            "class": "devicon-python-plain",
+            "name": "Python"
+          }
+        ]
+      }
+    ],
+    "experience": [
+      {
+        "company": "HiOF",
+        "title": "Software Engineering Student",
+        "years": "2021 - present",
+        "mainTech": [
+          ""
+        ],
+        "technologies": [
+          "Python",
+          "Linux",
+          "Bash",
+          "PHP",
+          "MySQL",
+          "HTML",
+          "CSS",
+          "Java",
+          "Network Security",
+          "Information Security"
+        ]
+      }
+    ]
+  }
