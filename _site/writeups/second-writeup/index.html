@@ -57,9 +57,10 @@
 <li>The server accepts unsigned tokens.</li>
 <li>The header can be edited without detection.</li>
 </ul>
-<p>Inline math: <eq><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mspace linebreak="newline"></mspace><mi>t</mi><mi>e</mi><mi>x</mi><mi>t</mi><mrow><mi>v</mi><mi>e</mi><mi>r</mi><mi>i</mi><mi>f</mi><mi>i</mi><mi>e</mi><mi>d</mi></mrow><mo>=</mo><mspace linebreak="newline"></mspace><mi>t</mi><mi>e</mi><mi>x</mi><mi>t</mi><mrow><mi>f</mi><mi>a</mi><mi>l</mi><mi>s</mi><mi>e</mi></mrow></mrow><annotation encoding="application/x-tex">\\text{verified} = \\text{false}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="mspace newline"></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">t</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mord mathnormal" style="margin-right:0.02778em;">er</span><span class="mord mathnormal">i</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal">i</span><span class="mord mathnormal">e</span><span class="mord mathnormal">d</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mord mathnormal">t</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">se</span></span></span></span></span></eq> when the key is missing.</p>
-<pre class="language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> role <span class="token keyword">FROM</span> users
-<span class="token keyword">WHERE</span> username <span class="token operator">=</span> <span class="token string">'admin'</span><span class="token punctuation">;</span></code></pre>
+<p>Inline math: $\text{verified} = \text{false}$ when the key is missing.</p>
+<pre><code class="language-sql">SELECT role FROM users
+WHERE username = 'admin';
+</code></pre>
 <table>
 <thead>
 <tr>
