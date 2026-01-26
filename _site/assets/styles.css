@@ -125,16 +125,27 @@ pre {
   margin-bottom: 32px;
 }
 
-.stat {
+.stat.glass {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
+  justify-content: center;
+  width: clamp(140px, 22vw, 176px);
+  height: 80px;
+  padding: 12px 16px;
+  text-align: center;
+}
+
+.stat.glass > div {
+  width: 100%;
 }
 
 .stat-value {
   font-size: 1.5rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  min-width: 4ch;
+  display: block;
 }
 
 .stat-label {
@@ -640,7 +651,7 @@ pre.shiki code {
     padding: 60px 16px;
   }
 
-  .stat {
+  .stat.glass {
     width: 100%;
     justify-content: center;
   }
