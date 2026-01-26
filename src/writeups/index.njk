@@ -1,0 +1,99 @@
+---
+layout: layouts/base.njk
+title: Writeups
+---
+<section class="page-title glass">
+  <h1>All Writeups</h1>
+  <p>Every CTF writeup, sorted by newest first.</p>
+</section>
+
+<section class="filters">
+  <div class="filters-group">
+    <span class="filters-label">Tags:</span>
+    <div class="filters-row tags">
+      {% for tag in collections.tagsList %}
+      <button class="chip chip-tag js-tag" data-tag="{{ tag }}">{{ tag }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  <p class="results-count" id="results-count">
+    Showing {{ collections.writeups | length }} of {{ collections.writeups | length }} writeups
+  </p>
+</section>
+
+<div class="writeup-grid two-column">
+  {% for post in collections.writeups %}
+  <a
+    href="{{ post.url | url }}"
+    class="writeup-card"
+    data-tags="{{ post.data.tags | default([]) | join(',') }}"
+    data-title="{{ post.data.title | lower }}"
+  >
+    <article class="glass">
+      <div class="badge">{{ post.data.category | default('CTF') }}</div>
+      <h3>{{ post.data.title }}</h3>
+      <p>{{ post.data.description | default('') }}</p>
+      <div class="tag-row">
+        {% if post.data.tags %}
+        {% for tag in post.data.tags %}
+        <span class="tag-pill">{{ tag }}</span>
+        {% endfor %}
+        {% endif %}
+      </div>
+      <div class="card-meta">
+        <span class="meta-item">
+          {{ post.date | date("%b %d, %Y") }}
+        </span>
+        {% if post.data.difficulty %}
+        <span class="meta-item">
+          {{ post.data.difficulty }}
+        </span>
+        {% endif %}
+        <span class="meta-arrow">
+          →
+        </span>
+      </div>
+    </article>
+  </a>
+  {% endfor %}
+</div>
+
+<script>
+  const tagButtons = Array.from(document.querySelectorAll(".js-tag"));
+  const cards = Array.from(document.querySelectorAll(".writeup-card"));
+  const results = document.getElementById("results-count");
+  const activeTags = new Set();
+
+  if (tagButtons.length > 0) {
+    const applyFilters = () => {
+      let visible = 0;
+      cards.forEach((card) => {
+        const tags = (card.dataset.tags || "").toLowerCase();
+        const show =
+          activeTags.size === 0 ||
+          Array.from(activeTags).some((tag) => tags.includes(tag.toLowerCase()));
+        card.style.display = show ? "block" : "none";
+        if (show) {
+          visible += 1;
+        }
+      });
+      if (results) {
+        results.textContent = `Showing ${visible} of ${cards.length} writeups`;
+      }
+    };
+
+    tagButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const tag = button.dataset.tag || "";
+        if (activeTags.has(tag)) {
+          activeTags.delete(tag);
+          button.classList.remove("chip-active");
+        } else {
+          activeTags.add(tag);
+          button.classList.add("chip-active");
+        }
+        applyFilters();
+      });
+    });
+  }
+</script>

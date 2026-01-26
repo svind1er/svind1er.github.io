@@ -1,0 +1,41 @@
+---
+layout: layouts/base.njk
+---
+<article class="post glass">
+  <a href="{{ "/#writeups" | url }}" class="back-link">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M15 6l-6 6 6 6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    Back to writeups
+  </a>
+  <header class="post-header">
+    <p class="eyebrow">Writeup</p>
+    <h1>{{ title }}</h1>
+    <div class="post-meta">
+      <span>{{ date | date("%b %d, %Y") }}</span>
+      {% if category %}
+      <span class="meta-pill">{{ category }}</span>
+      {% endif %}
+      {% if difficulty %}
+      <span class="meta-pill">{{ difficulty }}</span>
+      {% endif %}
+      {% if tags %}
+      <div class="tag-row">
+        {% for tag in tags %}
+        <span class="meta-pill">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </header>
+  <div class="post-content prose">
+    {{ content | safe }}
+  </div>
+</article>

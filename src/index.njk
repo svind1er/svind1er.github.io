@@ -1,0 +1,184 @@
+---
+layout: layouts/base.njk
+title: Home
+description: Ocean-themed writeups and research notes.
+---
+<section class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">
+      <span class="gradient-text">Writeups</span>
+    </h1>
+    <div class="hero-stats">
+      <div class="stat glass">
+        <div>
+          <div class="stat-value">{{ collections.writeups | length }}</div>
+          <div class="stat-label">Writeups</div>
+        </div>
+      </div>
+      <div class="stat glass">
+        <div>
+          <div class="stat-value">{{ collections.categories | length }}</div>
+          <div class="stat-label">Categories</div>
+        </div>
+      </div>
+      <div class="stat glass">
+        <div>
+          <div class="stat-value">{{ collections.tagsList | length }}</div>
+          <div class="stat-label">Topics</div>
+        </div>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M11 5a6 6 0 1 1 0 12 6 6 0 0 1 0-12zm9 14-4-4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+      </svg>
+      <input
+        class="search-input glass"
+        type="search"
+        placeholder="Search writeups..."
+        id="writeup-search"
+        aria-label="Search writeups"
+      />
+    </div>
+  </div>
+</section>
+
+<section id="writeups" class="filters">
+  <div class="filters-group">
+    <span class="filters-label">Categories:</span>
+    <div class="filters-row">
+      <button class="chip chip-active js-category" data-category="all">All</button>
+      {% for category in collections.categories %}
+      <button class="chip js-category" data-category="{{ category }}">{{ category }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="filters-group">
+    <span class="filters-label">Tags:</span>
+    <div class="filters-row tags">
+      {% for tag in collections.tagsList %}
+      <button class="chip chip-tag js-tag" data-tag="{{ tag }}">{{ tag }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  <p class="results-count" id="results-count">
+    Showing {{ collections.writeups | length }} of {{ collections.writeups | length }} writeups
+  </p>
+  <div class="writeup-grid two-column">
+    {% for post in collections.writeups %}
+    <a
+      href="{{ post.url | url }}"
+      class="writeup-card"
+      data-category="{{ post.data.category | default('') }}"
+      data-tags="{{ post.data.tags | default([]) | join(',') }}"
+      data-title="{{ post.data.title | lower }}"
+      data-description="{{ post.data.description | default('') | lower }}"
+    >
+      <article class="glass">
+        <div class="badge">{{ post.data.category | default('CTF') }}</div>
+        <h3>{{ post.data.title }}</h3>
+        <p>{{ post.data.description | default('') }}</p>
+        <div class="tag-row">
+          {% if post.data.tags %}
+          {% for tag in post.data.tags %}
+          <span class="tag-pill">{{ tag }}</span>
+          {% endfor %}
+          {% endif %}
+        </div>
+        <div class="card-meta">
+          <span class="meta-item">
+            {{ post.date | date("%b %d, %Y") }}
+          </span>
+          {% if post.data.difficulty %}
+          <span class="meta-item">
+            {{ post.data.difficulty }}
+          </span>
+          {% endif %}
+          <span class="meta-arrow">
+            →
+          </span>
+        </div>
+      </article>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+
+<script>
+  const searchInput = document.getElementById("writeup-search");
+  const categoryButtons = Array.from(document.querySelectorAll(".js-category"));
+  const tagButtons = Array.from(document.querySelectorAll(".js-tag"));
+  const cards = Array.from(document.querySelectorAll(".writeup-card"));
+  const results = document.getElementById("results-count");
+  let activeCategory = "all";
+  const activeTags = new Set();
+
+  function normalize(value) {
+    return (value || "").toLowerCase();
+  }
+
+  function applyFilters() {
+    const query = normalize(searchInput.value);
+    let visible = 0;
+
+    cards.forEach((card) => {
+      const title = card.dataset.title || "";
+      const description = card.dataset.description || "";
+      const tags = normalize(card.dataset.tags || "");
+      const category = normalize(card.dataset.category || "");
+
+      const matchesSearch =
+        query === "" ||
+        title.includes(query) ||
+        description.includes(query) ||
+        tags.includes(query);
+
+      const matchesCategory =
+        activeCategory === "all" || normalize(activeCategory) === category;
+
+      const matchesTags =
+        activeTags.size === 0 ||
+        Array.from(activeTags).some((tag) => tags.includes(normalize(tag)));
+
+      const show = matchesSearch && matchesCategory && matchesTags;
+      card.style.display = show ? "block" : "none";
+      if (show) {
+        visible += 1;
+      }
+    });
+
+    results.textContent = `Showing ${visible} of ${cards.length} writeups`;
+  }
+
+  categoryButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      categoryButtons.forEach((btn) => btn.classList.remove("chip-active"));
+      button.classList.add("chip-active");
+      activeCategory = button.dataset.category || "all";
+      applyFilters();
+    });
+  });
+
+  tagButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const tag = button.dataset.tag || "";
+      if (activeTags.has(tag)) {
+        activeTags.delete(tag);
+        button.classList.remove("chip-active");
+      } else {
+        activeTags.add(tag);
+        button.classList.add("chip-active");
+      }
+      applyFilters();
+    });
+  });
+
+  searchInput.addEventListener("input", applyFilters);
+</script>

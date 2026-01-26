@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Home | Ocean Writeups</title>
+    <meta name="description" content="Ocean-themed writeups and research notes." />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <link rel="stylesheet" href="/assets/prism.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <header class="site-header" aria-hidden="true"></header>
+    <main class="container">
+      <section class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">
+      <span class="gradient-text">Writeups</span>
+    </h1>
+    <div class="hero-stats">
+      <div class="stat glass">
+        <div>
+          <div class="stat-value">5</div>
+          <div class="stat-label">Writeups</div>
+        </div>
+      </div>
+      <div class="stat glass">
+        <div>
+          <div class="stat-value">5</div>
+          <div class="stat-label">Categories</div>
+        </div>
+      </div>
+      <div class="stat glass">
+        <div>
+          <div class="stat-value">3</div>
+          <div class="stat-label">Topics</div>
+        </div>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M11 5a6 6 0 1 1 0 12 6 6 0 0 1 0-12zm9 14-4-4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+      </svg>
+      <input
+        class="search-input glass"
+        type="search"
+        placeholder="Search writeups..."
+        id="writeup-search"
+        aria-label="Search writeups"
+      />
+    </div>
+  </div>
+</section>
+
+<section id="writeups" class="filters">
+  <div class="filters-group">
+    <span class="filters-label">Categories:</span>
+    <div class="filters-row">
+      <button class="chip chip-active js-category" data-category="all">All</button>
+      
+      <button class="chip js-category" data-category="Crypto">Crypto</button>
+      
+      <button class="chip js-category" data-category="Forensics">Forensics</button>
+      
+      <button class="chip js-category" data-category="Misc">Misc</button>
+      
+      <button class="chip js-category" data-category="Pwn">Pwn</button>
+      
+      <button class="chip js-category" data-category="Web">Web</button>
+      
+    </div>
+  </div>
+  <div class="filters-group">
+    <span class="filters-label">Tags:</span>
+    <div class="filters-row tags">
+      
+      <button class="chip chip-tag js-tag" data-tag="HTB">HTB</button>
+      
+      <button class="chip chip-tag js-tag" data-tag="picoCTF">picoCTF</button>
+      
+      <button class="chip chip-tag js-tag" data-tag="THM">THM</button>
+      
+    </div>
+  </div>
+  <p class="results-count" id="results-count">
+    Showing 5 of 5 writeups
+  </p>
+  <div class="writeup-grid two-column">
+    
+    <a
+      href="/writeups/random-writeup/"
+      class="writeup-card"
+      data-category="Misc"
+      data-tags="HTB"
+      data-title="misc: format string leak"
+      data-description="quick leak-and-parse workflow for a format string challenge."
+    >
+      <article class="glass">
+        <div class="badge">Misc</div>
+        <h3>Misc: Format String Leak</h3>
+        <p>Quick leak-and-parse workflow for a format string challenge.</p>
+        <div class="tag-row">
+          
+          
+          <span class="tag-pill">HTB</span>
+          
+          
+        </div>
+        <div class="card-meta">
+          <span class="meta-item">
+            Jul 10, 2024
+          </span>
+          
+          <span class="meta-item">
+            Easy
+          </span>
+          
+          <span class="meta-arrow">
+            →
+          </span>
+        </div>
+      </article>
+    </a>
+    
+    <a
+      href="/writeups/fourth-writeup/"
+      class="writeup-card"
+      data-category="Forensics"
+      data-tags="HTB"
+      data-title="forensics: memory strings sweep"
+      data-description="quick triage workflow for memory dumps using targeted strings."
+    >
+      <article class="glass">
+        <div class="badge">Forensics</div>
+        <h3>Forensics: Memory Strings Sweep</h3>
+        <p>Quick triage workflow for memory dumps using targeted strings.</p>
+        <div class="tag-row">
+          
+          
+          <span class="tag-pill">HTB</span>
+          
+          
+        </div>
+        <div class="card-meta">
+          <span class="meta-item">
+            Jul 02, 2024
+          </span>
+          
+          <span class="meta-item">
+            Medium
+          </span>
+          
+          <span class="meta-arrow">
+            →
+          </span>
+        </div>
+      </article>
+    </a>
+    
+    <a
+      href="/writeups/third-writeup/"
+      class="writeup-card"
+      data-category="Pwn"
+      data-tags="THM"
+      data-title="pwn: stack canary bypass"
+      data-description="leaking and reusing a stack canary in a classic buffer overflow."
+    >
+      <article class="glass">
+        <div class="badge">Pwn</div>
+        <h3>Pwn: Stack Canary Bypass</h3>
+        <p>Leaking and reusing a stack canary in a classic buffer overflow.</p>
+        <div class="tag-row">
+          
+          
+          <span class="tag-pill">THM</span>
+          
+          
+        </div>
+        <div class="card-meta">
+          <span class="meta-item">
+            Jun 18, 2024
+          </span>
+          
+          <span class="meta-item">
+            Medium
+          </span>
+          
+          <span class="meta-arrow">
+            →
+          </span>
+        </div>
+      </article>
+    </a>
+    
+    <a
+      href="/writeups/second-writeup/"
+      class="writeup-card"
+      data-category="Web"
+      data-tags="picoCTF"
+      data-title="web: jwt none algorithm"
+      data-description="abusing the `alg: none` pitfall to bypass signature checks."
+    >
+      <article class="glass">
+        <div class="badge">Web</div>
+        <h3>Web: JWT None Algorithm</h3>
+        <p>Abusing the `alg: none` pitfall to bypass signature checks.</p>
+        <div class="tag-row">
+          
+          
+          <span class="tag-pill">picoCTF</span>
+          
+          
+        </div>
+        <div class="card-meta">
+          <span class="meta-item">
+            Jun 03, 2024
+          </span>
+          
+          <span class="meta-item">
+            Easy
+          </span>
+          
+          <span class="meta-arrow">
+            →
+          </span>
+        </div>
+      </article>
+    </a>
+    
+    <a
+      href="/writeups/first-writeup/"
+      class="writeup-card"
+      data-category="Crypto"
+      data-tags="HTB"
+      data-title="crypto 101: one-time pad reuse"
+      data-description="a short walk-through showing why otp reuse leaks plaintext."
+    >
+      <article class="glass">
+        <div class="badge">Crypto</div>
+        <h3>Crypto 101: One-Time Pad Reuse</h3>
+        <p>A short walk-through showing why OTP reuse leaks plaintext.</p>
+        <div class="tag-row">
+          
+          
+          <span class="tag-pill">HTB</span>
+          
+          
+        </div>
+        <div class="card-meta">
+          <span class="meta-item">
+            May 12, 2024
+          </span>
+          
+          <span class="meta-item">
+            Easy
+          </span>
+          
+          <span class="meta-arrow">
+            →
+          </span>
+        </div>
+      </article>
+    </a>
+    
+  </div>
+</section>
+
+
+<script>
+  const searchInput = document.getElementById("writeup-search");
+  const categoryButtons = Array.from(document.querySelectorAll(".js-category"));
+  const tagButtons = Array.from(document.querySelectorAll(".js-tag"));
+  const cards = Array.from(document.querySelectorAll(".writeup-card"));
+  const results = document.getElementById("results-count");
+  let activeCategory = "all";
+  const activeTags = new Set();
+
+  function normalize(value) {
+    return (value || "").toLowerCase();
+  }
+
+  function applyFilters() {
+    const query = normalize(searchInput.value);
+    let visible = 0;
+
+    cards.forEach((card) => {
+      const title = card.dataset.title || "";
+      const description = card.dataset.description || "";
+      const tags = normalize(card.dataset.tags || "");
+      const category = normalize(card.dataset.category || "");
+
+      const matchesSearch =
+        query === "" ||
+        title.includes(query) ||
+        description.includes(query) ||
+        tags.includes(query);
+
+      const matchesCategory =
+        activeCategory === "all" || normalize(activeCategory) === category;
+
+      const matchesTags =
+        activeTags.size === 0 ||
+        Array.from(activeTags).some((tag) => tags.includes(normalize(tag)));
+
+      const show = matchesSearch && matchesCategory && matchesTags;
+      card.style.display = show ? "block" : "none";
+      if (show) {
+        visible += 1;
+      }
+    });
+
+    results.textContent = `Showing ${visible} of ${cards.length} writeups`;
+  }
+
+  categoryButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      categoryButtons.forEach((btn) => btn.classList.remove("chip-active"));
+      button.classList.add("chip-active");
+      activeCategory = button.dataset.category || "all";
+      applyFilters();
+    });
+  });
+
+  tagButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const tag = button.dataset.tag || "";
+      if (activeTags.has(tag)) {
+        activeTags.delete(tag);
+        button.classList.remove("chip-active");
+      } else {
+        activeTags.add(tag);
+        button.classList.add("chip-active");
+      }
+      applyFilters();
+    });
+  });
+
+  searchInput.addEventListener("input", applyFilters);
+</script>
+
+    </main>
+  </body>
+</html>
