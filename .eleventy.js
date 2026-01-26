@@ -38,6 +38,31 @@ module.exports = function(eleventyConfig) {
     return `${url}${joiner}v=${version}`;
   });
 
+  eleventyConfig.addCollection("writeups", (collectionApi) => {
+    return collectionApi.getFilteredByGlob("./src/writeups/*.md").sort((a, b) => {
+      return (b.date || 0) - (a.date || 0);
+    });
+  });
+
+  eleventyConfig.addCollection("categories", (collectionApi) => {
+    const categories = new Set();
+    collectionApi.getFilteredByGlob("./src/writeups/*.md").forEach((item) => {
+      if (item.data && item.data.category) {
+        categories.add(item.data.category);
+      }
+    });
+    return Array.from(categories).sort((a, b) => a.localeCompare(b));
+  });
+
+  eleventyConfig.addCollection("tagsList", (collectionApi) => {
+    const tags = new Set();
+    collectionApi.getFilteredByGlob("./src/writeups/*.md").forEach((item) => {
+      const itemTags = item.data && item.data.tags ? item.data.tags : [];
+      itemTags.forEach((tag) => tags.add(tag));
+    });
+    return Array.from(tags).sort((a, b) => a.localeCompare(b));
+  });
+
   return {
     dir: {
       input: "src",
