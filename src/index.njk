@@ -24,7 +24,7 @@ description: Ocean-themed writeups and research notes.
       <div class="stat glass">
         <div>
           <div class="stat-value">{{ collections.tagsList | length }}</div>
-          <div class="stat-label">Topics</div>
+          <div class="stat-label">Events</div>
         </div>
       </div>
     </div>
@@ -60,7 +60,7 @@ description: Ocean-themed writeups and research notes.
     </div>
   </div>
   <div class="filters-group">
-    <span class="filters-label">Tags:</span>
+    <span class="filters-label">Events:</span>
     <div class="filters-row tags">
       {% for tag in collections.tagsList %}
       <button class="chip chip-tag js-tag" data-tag="{{ tag }}">{{ tag }}</button>
