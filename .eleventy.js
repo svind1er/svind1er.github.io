@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 module.exports = function(eleventyConfig) {
   eleventyConfig.addFilter("date", (value, format) => {
     if (!value) {
@@ -18,6 +21,21 @@ module.exports = function(eleventyConfig) {
     }
 
     return date.toISOString();
+  });
+
+  eleventyConfig.addFilter("cacheBust", (url, filePath) => {
+    if (!filePath) {
+      return url;
+    }
+
+    const resolvedPath = path.join(__dirname, filePath);
+    if (!fs.existsSync(resolvedPath)) {
+      return url;
+    }
+
+    const version = fs.statSync(resolvedPath).mtimeMs.toString();
+    const joiner = url.includes("?") ? "&" : "?";
+    return `${url}${joiner}v=${version}`;
   });
 
   return {

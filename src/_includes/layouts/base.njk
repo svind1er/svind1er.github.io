@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ title }} | Ocean Writeups</title>
     <meta name="description" content="{{ description | default('Research notes and writeups.') }}" />
-    <link rel="stylesheet" href="{{ "/assets/styles.css" | url }}" />
-    <link rel="stylesheet" href="{{ "/assets/prism.css" | url }}" />
+    <link rel="stylesheet" href="{{ "/assets/styles.css" | url | cacheBust("src/assets/styles.css") }}" />
+    <link rel="stylesheet" href="{{ "/assets/prism.css" | url | cacheBust("src/assets/prism.css") }}" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
