@@ -125,7 +125,7 @@ pre {
   margin-bottom: 32px;
 }
 
-.stat {
+.stat.glass {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -135,7 +135,7 @@ pre {
   text-align: center;
 }
 
-.stat > div {
+.stat.glass > div {
   width: 100%;
 }
 
@@ -651,7 +651,7 @@ pre.shiki code {
     padding: 60px 16px;
   }
 
-  .stat {
+  .stat.glass {
     width: 100%;
     justify-content: center;
   }
