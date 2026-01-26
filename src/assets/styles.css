@@ -553,6 +553,12 @@ pre.language-text {
   white-space: pre-wrap;
 }
 
+pre.language-text code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 pre[class*="language-"] > code {
   background: transparent;
   padding: 0;
