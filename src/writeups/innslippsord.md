@@ -186,7 +186,7 @@ So the logic is:
 > Take A\[i\] and pw\[i\], mix them, rotate them, mix again with i, and check if it equals something derived from B\[i\].
 
 ## Pseudo C
-```C
+```c
 uint8_t rol8(uint8_t x, int s) {
     s &= 7; // keep only 0..7
     return (x << s) | (x >> (8 - s));

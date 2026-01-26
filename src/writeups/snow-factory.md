@@ -18,7 +18,6 @@ With Christmas on the horizon, can you lend a hand at the snow factory as they g
 
 - **File:** `snow_factory`
 - **Architecture:** amd64 (PIE)
-- **Platform:** #Linux
 - **File Type:** ELF 64-bit, dynamically linked
 - **Protections:** Partial RELRO, Canary, NX, PIE
 
@@ -46,7 +45,7 @@ Key findings:
   - Unbuffers stdio, prompts for name (`fgets 0x40` to stack), prints it with `printf(name)` → format string.  
   - Reads `box` (int) and `present` (long long) with `scanf`, then `boxes[box] = present;` with no bounds.  
 
-```C
+```c
 int __fastcall main(int argc, const char **argv, const char **envp)
 {
   int v4; // [rsp+14h] [rbp-5Ch] BYREF
@@ -75,7 +74,7 @@ int __fastcall main(int argc, const char **argv, const char **envp)
 
 - `win()`
 
-```C
+```c
 int win()
 {
   return system("/bin/cat flag.txt");

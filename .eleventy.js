@@ -1,9 +1,25 @@
 const fs = require("fs");
 const path = require("path");
 const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
+const markdownIt = require("markdown-it");
+const texmath = require("markdown-it-texmath");
+const katex = require("katex");
 
 module.exports = function(eleventyConfig) {
   eleventyConfig.addPlugin(syntaxHighlight);
+  const markdownLib = markdownIt({
+    html: true,
+    breaks: true,
+    linkify: true
+  }).use(texmath, {
+    engine: katex,
+    delimiters: "dollars",
+    katexOptions: {
+      throwOnError: false
+    }
+  });
+
+  eleventyConfig.setLibrary("md", markdownLib);
   eleventyConfig.addFilter("date", (value, format) => {
     if (!value) {
       return "";

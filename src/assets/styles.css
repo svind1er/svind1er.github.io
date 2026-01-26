@@ -528,6 +528,11 @@ pre {
   scrollbar-width: thin;
 }
 
+.prose pre:not([class]) code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 pre[class*="language-"] {
   background-color: var(--code-bg) !important;
   border: 1px solid var(--code-border);
