@@ -7,6 +7,7 @@ const katex = require("katex");
 
 module.exports = function(eleventyConfig) {
   eleventyConfig.addPlugin(syntaxHighlight);
+  eleventyConfig.addPassthroughCopy({ "src/assets": "assets" });
   const markdownLib = markdownIt({
     html: true,
     breaks: true,
