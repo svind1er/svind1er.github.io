@@ -1,7 +1,7 @@
 ---
 layout: layouts/post.njk
 title: "Snow Factory"
-date: 2025-12-23
+date: 2026-01-05
 category: Reverse Engineering
 difficulty: Easy
 tags: [JuleCTF2025]

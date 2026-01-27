@@ -1,7 +1,7 @@
 ---
 layout: layouts/post.njk
 title: "Ubalansert"
-date: 2025-12-20
+date: 2026-01-05
 category: Cryptography
 difficulty: Easy
 tags: [ETJ2025]

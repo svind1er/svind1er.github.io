@@ -1,7 +1,7 @@
 ---
 layout: layouts/post.njk
 title: "Out of Bounds"
-date: 2025-12-19
+date: 2026-01-05
 category: Forensics
 difficulty: Easy 
 tags: [JuleCTF2025]

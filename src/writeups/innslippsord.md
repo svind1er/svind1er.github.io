@@ -1,7 +1,7 @@
 ---
 layout: layouts/post.njk
+date: 2026-01-05
 title: "Innslippsord"
-date: 2025-12-25
 category: Reverse Engineering
 difficulty: Easy
 tags: [ETJ2025]

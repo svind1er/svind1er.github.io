@@ -1,7 +1,7 @@
 ---
 layout: layouts/post.njk
 title: "Solve Me"
-date: 2025-12-27
+date: 2026-01-05
 category: Reverse Engineering
 difficulty: Easy 
 tags: [ETJ2025]
