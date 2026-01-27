@@ -4,8 +4,14 @@ const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
 const markdownIt = require("markdown-it");
 const texmath = require("markdown-it-texmath");
 const katex = require("katex");
+const Prism = require("prismjs");
+const loadPrismLanguages = require("prismjs/components/index.js");
 
 module.exports = function(eleventyConfig) {
+  loadPrismLanguages(["nasm"]);
+  Prism.languages.asm = Prism.languages.nasm;
+  Prism.languages.assembly = Prism.languages.nasm;
+
   eleventyConfig.addPlugin(syntaxHighlight);
   eleventyConfig.addPassthroughCopy({ "src/assets": "assets" });
   const markdownLib = markdownIt({
