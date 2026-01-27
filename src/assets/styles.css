@@ -751,6 +751,10 @@ pre.shiki code {
     padding: 52px 16px 20px;
   }
 
+  .hero-inner {
+    width: 100%;
+  }
+
   .hero-kicker {
     font-size: clamp(2.1rem, 10vw, 3.2rem);
     letter-spacing: 0.08em;
@@ -782,6 +786,10 @@ pre.shiki code {
   .search-input {
     padding: 12px 16px 12px 44px;
     font-size: 0.95rem;
+  }
+
+  .search-wrap {
+    max-width: 100%;
   }
 
   .filters {
