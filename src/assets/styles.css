@@ -329,6 +329,7 @@ pre {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow: hidden;
 }
 
 .writeup-card article > * {
@@ -383,6 +384,8 @@ pre {
   gap: 8px;
   margin: 4px 0 0;
   grid-column: 1;
+  max-height: 32px;
+  overflow: hidden;
 }
 
 .tag-pill {
