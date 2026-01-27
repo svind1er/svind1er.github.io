@@ -10,9 +10,7 @@ description: "Format-string leak and win function in a festive ELF binary."
 
 ## Challenge Description
 
-```text
-With Christmas on the horizon, can you lend a hand at the snow factory as they get ready to pack presents they GOT for Santa?
-```
+_With Christmas on the horizon, can you lend a hand at the snow factory as they get ready to pack presents they GOT for Santa?_
 
 ## Binary Information
 
