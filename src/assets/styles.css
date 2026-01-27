@@ -324,7 +324,7 @@ pre {
 
 .writeup-card article {
   padding: 12px 16px;
-  height: 200px;
+  height: 220px;
   transition: transform 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
@@ -358,7 +358,7 @@ pre {
 
 .writeup-card h3 {
   font-size: 1.15rem;
-  margin: 0;
+  margin: 0 0 2px;
   font-weight: 600;
   grid-column: 1;
   line-height: 1.1;
@@ -370,7 +370,7 @@ pre {
 }
 
 .writeup-card p {
-  margin: 0;
+  margin: 0 0 4px;
   color: rgba(229, 231, 235, 0.7);
   font-size: 0.9rem;
   grid-column: 1;
@@ -386,7 +386,7 @@ pre {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 0;
+  margin: 6px 0 2px;
   grid-column: 1;
   max-height: 28px;
   overflow: hidden;
