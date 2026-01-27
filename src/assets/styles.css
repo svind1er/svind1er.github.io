@@ -99,17 +99,21 @@ pre {
 }
 
 .hero-kicker {
-  font-size: 0.85rem;
-  letter-spacing: 0.3em;
+  font-size: 0.95rem;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(229, 231, 235, 0.65);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+}
+
+.hero-handle {
+  display: inline-block;
+  font-weight: 600;
 }
 
 .hero-links {
   display: flex;
   justify-content: center;
-  margin: -8px 0 28px;
+  margin: -6px 0 28px;
 }
 
 .hero-link {
@@ -121,6 +125,18 @@ pre {
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  border: 1px solid rgba(250, 204, 21, 0.28);
+  box-shadow: 0 12px 24px rgba(3, 7, 18, 0.35);
+}
+
+.hero-link-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.hero-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(253, 224, 71, 0.6);
 }
 
 .eyebrow {
