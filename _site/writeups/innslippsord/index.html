@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Innslippsord | Ocean Writeups</title>
+    <meta name="description" content="Reversing the innslippsord password check and assembly flow." />
+    <link rel="stylesheet" href="/assets/styles.css?v=1769473021740.7178" />
+    <link rel="stylesheet" href="/assets/prism.css?v=1769465093475.447" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <header class="site-header" aria-hidden="true"></header>
+    <main class="container">
+      <article class="post glass">
+  <a href="/#writeups" class="back-link">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M15 6l-6 6 6 6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    Back to writeups
+  </a>
+  <header class="post-header">
+    <p class="eyebrow">Writeup</p>
+    <h1>Innslippsord</h1>
+    <div class="post-meta">
+      <span>Jan 27, 2025</span>
+      
+      <span class="meta-pill">Reverse Engineering</span>
+      
+      
+      <span class="meta-pill">Easy</span>
+      
+      
+      <div class="tag-row">
+        
+        <span class="meta-pill">ETJ2025</span>
+        
+      </div>
+      
+    </div>
+  </header>
+  <div class="post-content prose">
+    <h2>Analysis</h2>
+<pre class="language-sh"><code class="language-sh">login@corax ~/1_grunnleggende/1.7_Innslippsord $ pwn checksec innslippsord
+<span class="token punctuation">[</span>*<span class="token punctuation">]</span> <span class="token string">'/home/login/1_grunnleggende/1.7_Innslippsord/innslippsord'</span>
+    Arch:       amd64-64-little
+    RELRO:      Full RELRO
+    Stack:      Canary found
+    NX:         NX enabled
+    PIE:        PIE enabled
+    SHSTK:      Enabled
+    IBT:        Enabled
+    Stripped:   No
+
+pwndbg ./innslippsord
+pwndbg<span class="token operator">></span> info functions
+pwndbg<span class="token operator">></span> disas check_pw</code></pre>
+<h2>check_pw</h2>
+<pre class="language-asm"><code class="language-asm">   0x00000000000011fe <+0>:     endbr64
+   0x0000000000001202 <+4>:     push   rbp
+   0x0000000000001203 <+5>:     mov    rbp,rsp
+   0x0000000000001206 <+8>:     sub    rsp,0x70
+   0x000000000000120a <+12>:    mov    QWORD PTR [rbp-0x68],rdi
+   0x000000000000120e <+16>:    mov    rax,QWORD PTR fs:0x28
+   0x0000000000001217 <+25>:    mov    QWORD PTR [rbp-0x8],rax
+   0x000000000000121b <+29>:    xor    eax,eax
+   0x000000000000121d <+31>:    movabs rax,0xa3555b22f1748b5
+   0x0000000000001227 <+41>:    movabs rdx,0x4030201bac98030
+   0x0000000000001231 <+51>:    mov    QWORD PTR [rbp-0x50],rax
+   0x0000000000001235 <+55>:    mov    QWORD PTR [rbp-0x48],rdx
+   0x0000000000001239 <+59>:    movabs rax,0xc0b0a0908070605
+   0x0000000000001243 <+69>:    movabs rdx,0x14131211100f0e0d
+   0x000000000000124d <+79>:    mov    QWORD PTR [rbp-0x40],rax
+   0x0000000000001251 <+83>:    mov    QWORD PTR [rbp-0x38],rdx
+   0x0000000000001255 <+87>:    movabs rax,0x3a2a1890f179f909
+   0x000000000000125f <+97>:    movabs rdx,0x309ad966fdffce04
+   0x0000000000001269 <+107>:   mov    QWORD PTR [rbp-0x30],rax
+   0x000000000000126d <+111>:   mov    QWORD PTR [rbp-0x28],rdx
+   0x0000000000001271 <+115>:   movabs rax,0x3cb79b4de323fccc
+   0x000000000000127b <+125>:   movabs rdx,0x27921d845263e06a
+   0x0000000000001285 <+135>:   mov    QWORD PTR [rbp-0x20],rax
+   0x0000000000001289 <+139>:   mov    QWORD PTR [rbp-0x18],rdx
+   0x000000000000128d <+143>:   mov    DWORD PTR [rbp-0x54],0x20
+   0x0000000000001294 <+150>:   mov    DWORD PTR [rbp-0x5c],0x1234abcd
+   0x000000000000129b <+157>:   mov    DWORD PTR [rbp-0x58],0x0
+   0x00000000000012a2 <+164>:   jmp    0x1358 <check_pw+346>
+   0x00000000000012a7 <+169>:   mov    eax,DWORD PTR [rbp-0x58]
+   0x00000000000012aa <+172>:   movsxd rdx,eax
+   0x00000000000012ad <+175>:   mov    rax,QWORD PTR [rbp-0x68]
+   0x00000000000012b1 <+179>:   add    rax,rdx
+   0x00000000000012b4 <+182>:   movzx  eax,BYTE PTR [rax]
+   0x00000000000012b7 <+185>:   mov    BYTE PTR [rbp-0x5f],al
+   0x00000000000012ba <+188>:   cmp    BYTE PTR [rbp-0x5f],0x0
+   0x00000000000012be <+192>:   jne    0x12ca <check_pw+204>
+   0x00000000000012c0 <+194>:   mov    eax,0x0
+   0x00000000000012c5 <+199>:   jmp    0x1384 <check_pw+390>
+   0x00000000000012ca <+204>:   mov    eax,DWORD PTR [rbp-0x58]
+   0x00000000000012cd <+207>:   and    eax,0x1
+   0x00000000000012d0 <+210>:   test   eax,eax
+   0x00000000000012d2 <+212>:   je     0x12e4 <check_pw+230>
+   0x00000000000012d4 <+214>:   movzx  eax,BYTE PTR [rbp-0x5f]
+   0x00000000000012d8 <+218>:   mov    edx,eax
+   0x00000000000012da <+220>:   shl    edx,0x4
+   0x00000000000012dd <+223>:   add    eax,edx
+   0x00000000000012df <+225>:   xor    DWORD PTR [rbp-0x5c],eax
+   0x00000000000012e2 <+228>:   jmp    0x12f1 <check_pw+243>
+   0x00000000000012e4 <+230>:   movzx  eax,BYTE PTR [rbp-0x5f]
+   0x00000000000012e8 <+234>:   xor    eax,0xffffffa5
+   0x00000000000012eb <+237>:   movzx  eax,al
+   0x00000000000012ee <+240>:   add    DWORD PTR [rbp-0x5c],eax
+   0x00000000000012f1 <+243>:   mov    eax,DWORD PTR [rbp-0x58]
+   0x00000000000012f4 <+246>:   cdqe
+   0x00000000000012f6 <+248>:   movzx  eax,BYTE PTR [rbp+rax*1-0x50]
+   0x00000000000012fb <+253>:   xor    al,BYTE PTR [rbp-0x5f]
+   0x00000000000012fe <+256>:   mov    BYTE PTR [rbp-0x5e],al
+   0x0000000000001301 <+259>:   mov    eax,DWORD PTR [rbp-0x58]
+   0x0000000000001304 <+262>:   add    eax,0x1
+   0x0000000000001307 <+265>:   and    eax,0x7
+   0x000000000000130a <+268>:   mov    edx,eax
+   0x000000000000130c <+270>:   movzx  eax,BYTE PTR [rbp-0x5e]
+   0x0000000000001310 <+274>:   mov    esi,edx
+   0x0000000000001312 <+276>:   mov    edi,eax
+   0x0000000000001314 <+278>:   call   0x11c9 <rol>
+   0x0000000000001319 <+283>:   mov    BYTE PTR [rbp-0x5e],al
+   0x000000000000131c <+286>:   mov    eax,DWORD PTR [rbp-0x58]
+   0x000000000000131f <+289>:   cdqe
+   0x0000000000001321 <+291>:   movzx  edx,BYTE PTR [rbp+rax*1-0x30]
+   0x0000000000001326 <+296>:   mov    eax,DWORD PTR [rbp-0x58]
+   0x0000000000001329 <+299>:   mov    ecx,eax
+   0x000000000000132b <+301>:   mov    eax,ecx
+   0x000000000000132d <+303>:   add    eax,eax
+   0x000000000000132f <+305>:   add    eax,ecx
+   0x0000000000001331 <+307>:   xor    eax,edx
+   0x0000000000001333 <+309>:   mov    BYTE PTR [rbp-0x5d],al
+   0x0000000000001336 <+312>:   mov    eax,DWORD PTR [rbp-0x58]
+   0x0000000000001339 <+315>:   mov    edx,eax
+   0x000000000000133b <+317>:   mov    eax,edx
+   0x000000000000133d <+319>:   add    eax,eax
+   0x000000000000133f <+321>:   add    eax,edx
+   0x0000000000001341 <+323>:   xor    BYTE PTR [rbp-0x5e],al
+   0x0000000000001344 <+326>:   movzx  eax,BYTE PTR [rbp-0x5e]
+   0x0000000000001348 <+330>:   cmp    al,BYTE PTR [rbp-0x5d]
+   0x000000000000134b <+333>:   je     0x1354 <check_pw+342>
+   0x000000000000134d <+335>:   mov    eax,0x0
+   0x0000000000001352 <+340>:   jmp    0x1384 <check_pw+390>
+   0x0000000000001354 <+342>:   add    DWORD PTR [rbp-0x58],0x1
+   0x0000000000001358 <+346>:   mov    eax,DWORD PTR [rbp-0x58]
+   0x000000000000135b <+349>:   cmp    eax,DWORD PTR [rbp-0x54]
+   0x000000000000135e <+352>:   jl     0x12a7 <check_pw+169>
+   0x0000000000001364 <+358>:   mov    eax,DWORD PTR [rbp-0x54]
+   0x0000000000001367 <+361>:   movsxd rdx,eax
+   0x000000000000136a <+364>:   mov    rax,QWORD PTR [rbp-0x68]
+   0x000000000000136e <+368>:   add    rax,rdx
+   0x0000000000001371 <+371>:   movzx  eax,BYTE PTR [rax]
+   0x0000000000001374 <+374>:   test   al,al
+   0x0000000000001376 <+376>:   je     0x137f <check_pw+385>
+   0x0000000000001378 <+378>:   mov    eax,0x0
+   0x000000000000137d <+383>:   jmp    0x1384 <check_pw+390>
+   0x000000000000137f <+385>:   mov    eax,0x1
+   0x0000000000001384 <+390>:   mov    rdx,QWORD PTR [rbp-0x8]
+   0x0000000000001388 <+394>:   sub    rdx,QWORD PTR fs:0x28
+   0x0000000000001391 <+403>:   je     0x1398 <check_pw+410>
+   0x0000000000001393 <+405>:   call   0x10b0 <__stack_chk_fail@plt>
+   0x0000000000001398 <+410>:   leave
+   0x0000000000001399 <+411>:   ret</code></pre>
+<h2>Findings</h2>
+<ul>
+<li>The program has <strong>two hidden lists of 32 bytes each</strong> (A and B), stored on the stack.</li>
+<li>Your password must be <strong>exactly 32 characters long</strong>.</li>
+<li>For every character in your password, the program:
+<ul>
+<li>mixes it with a value from A</li>
+<li>rotates the bits</li>
+<li>compares it with a value from B</li>
+</ul>
+</li>
+<li>If <strong>any</strong> character does not match → password is wrong.</li>
+<li>If <strong>all 32 match</strong>, and the string ends <em>exactly</em> after 32 chars → password is correct.</li>
+</ul>
+<pre class="language-asm"><code class="language-asm">mov    eax,DWORD PTR [rbp-0x58]      ; load i
+cdqe                                 ; convert to 64-bit
+movzx  eax,BYTE PTR [rbp+rax*1-0x50] ; eax = A[i]
+xor    al,BYTE PTR [rbp-0x5f]        ; al = A[i] ^ pw[i]
+mov    BYTE PTR [rbp-0x5e],al        ; store t = A[i] ^ pw[i]</code></pre>
+<ul>
+<li><code>A[i]</code> is stored at <code>[rbp - 0x50 + i]</code></li>
+<li><code>pw[i]</code> is at <code>[rbp - 0x5f]</code></li>
+<li><code>t</code> becomes <code>A[i] ^ pw[i]</code></li>
+</ul>
+<p>then it rotates the bits</p>
+<pre class="language-asm"><code class="language-asm">mov    eax,DWORD PTR [rbp-0x58]
+add    eax,1
+and    eax,7                     ; s = (i+1) & 7
+movzx  eax,BYTE PTR [rbp-0x5e]   ; load t
+mov    esi,edx                   ; rotation amount
+mov    edi,eax                   ; t
+call   rol                       ; t = rol8(t, s)</code></pre>
+<p>Then it loads a byte from the second array B:<br>
+<code>movzx  edx,BYTE PTR [rbp+rax*1-0x30] ; edx = B[i]</code></p>
+<p>And compares the mixed/rotated value with another transformed version of B[i]:</p>
+<pre class="language-asm"><code class="language-asm">xor BYTE PTR [rbp-0x5e], al      ; t ^= (3*i) 
+cmp al, BYTE PTR [rbp-0x5d]      ; v1 = B[i] ^ (3*i) 
+je  ok                           ; must match exactly`</code></pre>
+<p>So the logic is:</p>
+<blockquote>
+<p>Take A[i] and pw[i], mix them, rotate them, mix again with i, and check if it equals something derived from B[i].</p>
+</blockquote>
+<h2>Pseudo C</h2>
+<pre class="language-c"><code class="language-c"><span class="token class-name">uint8_t</span> <span class="token function">rol8</span><span class="token punctuation">(</span><span class="token class-name">uint8_t</span> x<span class="token punctuation">,</span> <span class="token keyword">int</span> s<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    s <span class="token operator">&amp;=</span> <span class="token number">7</span><span class="token punctuation">;</span> <span class="token comment">// keep only 0..7</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span>x <span class="token operator">&lt;&lt;</span> s<span class="token punctuation">)</span> <span class="token operator">|</span> <span class="token punctuation">(</span>x <span class="token operator">>></span> <span class="token punctuation">(</span><span class="token number">8</span> <span class="token operator">-</span> s<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">int</span> <span class="token function">check_pw</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>pw<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token class-name">uint8_t</span> A<span class="token punctuation">[</span><span class="token number">32</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{</span> <span class="token comment">/* bytes from movabs */</span> <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token class-name">uint8_t</span> B<span class="token punctuation">[</span><span class="token number">32</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{</span> <span class="token comment">/* bytes from movabs */</span> <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">32</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>pw<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token char">'\0'</span><span class="token punctuation">)</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// too short</span>
+
+        <span class="token class-name">uint8_t</span> t <span class="token operator">=</span> A<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">^</span> pw<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        t <span class="token operator">=</span> <span class="token function">rol8</span><span class="token punctuation">(</span>t<span class="token punctuation">,</span> <span class="token punctuation">(</span>i<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">uint8_t</span> v1 <span class="token operator">=</span> B<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">^</span> <span class="token punctuation">(</span><span class="token number">3</span> <span class="token operator">*</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        t <span class="token operator">^=</span> <span class="token punctuation">(</span><span class="token number">3</span> <span class="token operator">*</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>t <span class="token operator">!=</span> v1<span class="token punctuation">)</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// wrong character at this position</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pw<span class="token punctuation">[</span><span class="token number">32</span><span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token char">'\0'</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">// too long</span>
+
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>      <span class="token comment">// password OK</span>
+<span class="token punctuation">}</span></code></pre>
+<h3>Why this produces <strong>exactly one</strong> valid password</h3>
+<p>The final comparison:<br>
+<code>rol8(A[i] ^ pw[i], (i+1)&amp;7) == B[i]</code></p>
+<p>can be reversed mathematically, because:</p>
+<ul>
+<li>ROTL/ROTR is reversible</li>
+<li>XOR is reversible<br>
+So:<br>
+<code>A[i] ^ pw[i] = rotr8(B[i], (i+1)&amp;7) pw[i] = A[i] ^ rotr8(B[i], (i+1)&amp;7)</code></li>
+</ul>
+<p>For each position i, this gives <strong>one and only one</strong> correct byte.<br>
+Doing this for all 32 positions yields the final password.</p>
+<h2>Flag</h2>
+<pre><code>168065a0236e2e64c9c6cdd086c55f63
+</code></pre>
+
+  </div>
+</article>
+
+    </main>
+  </body>
+</html>

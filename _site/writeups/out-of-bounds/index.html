@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Out of Bounds | Ocean Writeups</title>
+    <meta name="description" content="PCAP analysis of a Minecraft session with zlib-compressed packets." />
+    <link rel="stylesheet" href="/assets/styles.css?v=1769473021740.7178" />
+    <link rel="stylesheet" href="/assets/prism.css?v=1769465093475.447" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <header class="site-header" aria-hidden="true"></header>
+    <main class="container">
+      <article class="post glass">
+  <a href="/#writeups" class="back-link">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M15 6l-6 6 6 6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    Back to writeups
+  </a>
+  <header class="post-header">
+    <p class="eyebrow">Writeup</p>
+    <h1>Out of Bounds</h1>
+    <div class="post-meta">
+      <span>Dec 16, 2025</span>
+      
+      <span class="meta-pill">Forensics</span>
+      
+      
+      <span class="meta-pill">Easy</span>
+      
+      
+      <div class="tag-row">
+        
+        <span class="meta-pill">JuleCTF2025</span>
+        
+      </div>
+      
+    </div>
+  </header>
+  <div class="post-content prose">
+    <h2>Challenge Description</h2>
+<p><em>Noen fikk tilgang til Minecraft-serveren vår, men heldigvis ble det ikke gjort noe ugagn.<br>
+I stedet for å ødelegge noe, ser det ut til at spilleren har etterlatt seg et slags spor.<br>
+Klarer du å finne ut hva spilleren prøvde å fortelle oss?</em></p>
+<h2>Evidence Files</h2>
+<ul>
+<li><strong>Primary File:</strong> <code>out.pcap</code>- Network capture from a Minecraft server session</li>
+<li><strong>File Hashes:</strong>
+<ul>
+<li>MD5: <code>a75c408ea9ffde660d3ac157a5563a5d</code></li>
+<li>SHA256: <code>b0e0ec370954a4793d7009cc20e875208bfa2edaaabbdbc83a53b9d3bd299578</code></li>
+</ul>
+</li>
+</ul>
+<h2>Initial Triage</h2>
+<h3>File Analysis</h3>
+<pre class="language-bash"><code class="language-bash"><span class="token function">file</span> out.pcap
+tshark <span class="token parameter variable">-r</span> out.pcap <span class="token parameter variable">-q</span> <span class="token parameter variable">-z</span> conv,tcp
+tshark <span class="token parameter variable">-r</span> out.pcap <span class="token parameter variable">-z</span> follow,tcp,raw,0 <span class="token operator">|</span> <span class="token function">head</span>
+strings <span class="token parameter variable">-n</span> <span class="token number">6</span> out.pcap <span class="token operator">|</span> <span class="token function">head</span></code></pre>
+<p><strong>File Type:</strong> PCAP (TCP stream on port 25565 / Minecraft)</p>
+<p><strong>Key Observations:</strong></p>
+<ul>
+<li>One dominant TCP stream to port 25565 (Minecraft).</li>
+<li>Payloads are not plaintext; raw follow shows many <code>0x78</code> headers, consistent with zlib-compressed Minecraft packets.</li>
+<li><code>strings</code> shows Minecraft namespaces (<code>minecraft:brand</code>, etc.), confirming protocol.</li>
+</ul>
+<h2>Analysis Methodology</h2>
+<h3>Step 1: Locate zlib-compressed payloads</h3>
+<pre class="language-bash"><code class="language-bash">tshark <span class="token parameter variable">-r</span> out.pcap <span class="token parameter variable">-q</span> <span class="token parameter variable">-z</span> follow,tcp,raw,0 <span class="token operator">|</span> <span class="token function">tail</span> <span class="token parameter variable">-n</span> +7 <span class="token operator">|</span> <span class="token function">head</span>
+<span class="token comment"># first bytes are the uncompressed handshake; zlib does not start immediately</span>
+
+<span class="token comment"># find the first zlib header (0x78 xx) in the stream</span>
+tshark <span class="token parameter variable">-r</span> out.pcap <span class="token parameter variable">-q</span> <span class="token parameter variable">-z</span> follow,tcp,raw,0 <span class="token punctuation">\</span>
+  <span class="token operator">|</span> <span class="token function">tail</span> <span class="token parameter variable">-n</span> +7 <span class="token operator">|</span> <span class="token function">tr</span> <span class="token parameter variable">-d</span> <span class="token string">' \t\r\n'</span> <span class="token operator">|</span> <span class="token function">grep</span> <span class="token parameter variable">-abo</span> <span class="token string">'78[0-9a-f][0-9a-f]'</span> <span class="token operator">|</span> <span class="token function">head</span></code></pre>
+<p><strong>Findings:</strong></p>
+<ul>
+<li>The initial packets are the handshake; compressed data appears later in the stream.</li>
+<li>Zlib-compressed chunks show CMF/FLG bytes <code>0x78 ??</code> inside the reassembled stream.</li>
+</ul>
+<h3>Step 2: Decompress and hunt for teleport messages</h3>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> re
+<span class="token keyword">import</span> zlib
+<span class="token keyword">from</span> pathlib <span class="token keyword">import</span> Path
+
+<span class="token keyword">def</span> <span class="token function">extract_coords</span><span class="token punctuation">(</span>buf<span class="token punctuation">:</span> <span class="token builtin">bytes</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">list</span><span class="token punctuation">[</span><span class="token builtin">tuple</span><span class="token punctuation">[</span><span class="token builtin">float</span><span class="token punctuation">,</span> <span class="token builtin">float</span><span class="token punctuation">,</span> <span class="token builtin">float</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+    coords <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+    i <span class="token operator">=</span> <span class="token number">0</span>
+    end <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">2</span>
+    
+    <span class="token keyword">while</span> i <span class="token operator">&lt;</span> end<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> buf<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0x78</span><span class="token punctuation">:</span>
+            dobj <span class="token operator">=</span> zlib<span class="token punctuation">.</span>decompressobj<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token keyword">try</span><span class="token punctuation">:</span>
+                chunk <span class="token operator">=</span> dobj<span class="token punctuation">.</span>decompress<span class="token punctuation">(</span>buf<span class="token punctuation">[</span>i<span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+            <span class="token keyword">except</span> Exception<span class="token punctuation">:</span>
+                i <span class="token operator">+=</span> <span class="token number">1</span>
+                <span class="token keyword">continue</span>
+            used <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>buf<span class="token punctuation">[</span>i<span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token builtin">len</span><span class="token punctuation">(</span>dobj<span class="token punctuation">.</span>unused_data<span class="token punctuation">)</span>
+            
+            <span class="token keyword">if</span> <span class="token string">b"teleport.success.location.single"</span> <span class="token keyword">in</span> chunk<span class="token punctuation">:</span>
+                text <span class="token operator">=</span> chunk<span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token string">"utf-8"</span><span class="token punctuation">,</span> <span class="token string">"ignore"</span><span class="token punctuation">)</span>
+                prefix <span class="token operator">=</span> text<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">"teleport.success.location.single"</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+                nums <span class="token operator">=</span> re<span class="token punctuation">.</span>findall<span class="token punctuation">(</span><span class="token string">r"([0-9]+\.[0-9]+)"</span><span class="token punctuation">,</span> prefix<span class="token punctuation">)</span>
+                
+                <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>nums<span class="token punctuation">)</span> <span class="token operator">>=</span> <span class="token number">3</span><span class="token punctuation">:</span>
+                    x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> z <span class="token operator">=</span> nums<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">3</span><span class="token punctuation">:</span><span class="token punctuation">]</span>
+                    coords<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token builtin">float</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">float</span><span class="token punctuation">(</span>y<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token builtin">float</span><span class="token punctuation">(</span>z<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                    
+            i <span class="token operator">+=</span> used <span class="token keyword">if</span> used <span class="token keyword">else</span> <span class="token number">1</span>
+            
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            i <span class="token operator">+=</span> <span class="token number">1</span>
+    <span class="token keyword">return</span> coords
+
+<span class="token keyword">def</span> <span class="token function">build_flag</span><span class="token punctuation">(</span>coords<span class="token punctuation">:</span> <span class="token builtin">list</span><span class="token punctuation">[</span><span class="token builtin">tuple</span><span class="token punctuation">[</span><span class="token builtin">float</span><span class="token punctuation">,</span> <span class="token builtin">float</span><span class="token punctuation">,</span> <span class="token builtin">float</span><span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">str</span><span class="token punctuation">:</span>
+    ordered <span class="token operator">=</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>coords<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> t<span class="token punctuation">:</span> <span class="token punctuation">(</span>t<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> t<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    text <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span><span class="token builtin">chr</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">for</span> x<span class="token punctuation">,</span> _<span class="token punctuation">,</span> _ <span class="token keyword">in</span> ordered<span class="token punctuation">)</span>
+    <span class="token keyword">return</span> text<span class="token punctuation">.</span>replace<span class="token punctuation">(</span><span class="token string">"Ar0NuD"</span><span class="token punctuation">,</span> <span class="token string">"Ar0uND"</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    buf <span class="token operator">=</span> Path<span class="token punctuation">(</span><span class="token string">"out.pcap"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>read_bytes<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    coords <span class="token operator">=</span> extract_coords<span class="token punctuation">(</span>buf<span class="token punctuation">)</span>
+    flag <span class="token operator">=</span> build_flag<span class="token punctuation">(</span>coords<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"count: </span><span class="token interpolation"><span class="token punctuation">{</span><span class="token builtin">len</span><span class="token punctuation">(</span>coords<span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"flag: </span><span class="token interpolation"><span class="token punctuation">{</span>flag<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+<p><strong>Findings:</strong></p>
+<ul>
+<li>35 teleport success messages found; each contains X, Y, Z floats.</li>
+<li>Sorting by Z (ordering) and mapping X to ASCII yields the flag text.</li>
+</ul>
+<h3>Step 3: Reconstruct the message</h3>
+<ul>
+<li>Sort <code>(X, Z)</code> pairs by Z.</li>
+<li>Convert each X to a character with <code>chr(int(X))</code>.</li>
+<li>Resulting text is the flag.</li>
+</ul>
+<h2>Key Artifacts</h2>
+<ul>
+<li><strong>Artifact:</strong> Teleport success chat messages (<code>teleport.success.location.single</code>) inside zlib-compressed Minecraft packets.</li>
+<li><strong>Significance:</strong> Encodes the flag via crafted X (ASCII) and Z (order) coordinates.</li>
+</ul>
+<h2>Analysis Results</h2>
+<h3>Recovered Data</h3>
+<pre><code>JUL{T3lep0Rting_Ar0uND_Th3_w0r1d!?}
+</code></pre>
+<h3>Network Communications</h3>
+<ul>
+<li><strong>Source IP:</strong> 10.0.0.36</li>
+<li><strong>Destination IP:</strong> 129.241.150.90</li>
+<li><strong>Protocols Used:</strong> TCP (Minecraft)</li>
+<li><strong>Suspicious Traffic:</strong> Repeated teleports embedding coordinates as data exfiltration.</li>
+</ul>
+<h2>Flag</h2>
+<pre><code>JUL{T3lep0Rting_Ar0uND_Th3_w0r1d!?}
+</code></pre>
+<h2>Tools Used</h2>
+<ul>
+<li><strong>Network Analysis:</strong> tshark/wireshark, Python (zlib, re)</li>
+</ul>
+<hr>
+<p><strong>Tags:</strong> #forensics #pcap #minecraft #network-analysis</p>
+
+  </div>
+</article>
+
+    </main>
+  </body>
+</html>

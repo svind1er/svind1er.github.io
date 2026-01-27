@@ -39,3 +39,10 @@ layout: layouts/base.njk
     {{ content | safe }}
   </div>
 </article>
+<script>
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      window.location.href = "{{ "/#writeups" | url }}";
+    }
+  });
+</script>

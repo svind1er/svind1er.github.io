@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Solve Me | Ocean Writeups</title>
+    <meta name="description" content="Multi-stage password checks and a Salsa-like decrypt for flags." />
+    <link rel="stylesheet" href="/assets/styles.css?v=1769473021740.7178" />
+    <link rel="stylesheet" href="/assets/prism.css?v=1769465093475.447" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <header class="site-header" aria-hidden="true"></header>
+    <main class="container">
+      <article class="post glass">
+  <a href="/#writeups" class="back-link">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M15 6l-6 6 6 6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    Back to writeups
+  </a>
+  <header class="post-header">
+    <p class="eyebrow">Writeup</p>
+    <h1>Solve Me</h1>
+    <div class="post-meta">
+      <span>Jan 27, 2025</span>
+      
+      <span class="meta-pill">Reverse Engineering</span>
+      
+      
+      <span class="meta-pill">Easy</span>
+      
+      
+      <div class="tag-row">
+        
+        <span class="meta-pill">ETJ2025</span>
+        
+      </div>
+      
+    </div>
+  </header>
+  <div class="post-content prose">
+    <h2>Overview</h2>
+<p><code>solveMe</code> asks for four passwords. Each correct password reveals a flag. The first three are straightforward string checks; the fourth uses a custom Salsa-like decryption on embedded data and requires a 4-letter lowercase password.</p>
+<p>Known passwords &amp; flags:</p>
+<ol>
+<li>Password: <code>SuperSecretPass!</code> → <code>FLAG{Strings_are_all_you_need}</code></li>
+<li>Password: <code>a beautiful pass</code> → <code>FLAG{Start_the_day_on_the_right_offset}</code></li>
+<li>Password: <code>n0PlaceLik3aH0m3</code> → <code>FLAG{Don't_get_lost_on_your_way_home}</code></li>
+<li>Password: <code>qbit</code> → <code>FLAG{Brutus_doesnt_remember_passwords}</code></li>
+<li>Flag 5 found in hexdump during decrypt loop: <code>FLAG{A_sparkling_hidden_gem}</code> (lucky lol)</li>
+</ol>
+<h2>Passwords 1–3 (straight from the code)</h2>
+<h3>Password 1</h3>
+<p><code>checkPassword1</code> enforces:</p>
+<ul>
+<li>Length 16</li>
+<li>Exact match to the hardcoded string <code>SuperSecretPass!</code></li>
+</ul>
+<pre class="language-cpp"><code class="language-cpp"><span class="token keyword">if</span> <span class="token punctuation">(</span>Mysize <span class="token operator">!=</span> <span class="token number">16</span> <span class="token operator">||</span> <span class="token function">memcmp</span><span class="token punctuation">(</span>guessedPassword<span class="token punctuation">,</span> <span class="token string">"SuperSecretPass!"</span><span class="token punctuation">,</span> <span class="token number">0x10u</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<h3>Password 2</h3>
+<p><code>checkPassword2</code> builds the string <code>What a beautiful password you have chosen for yourself!</code> and compares the first 16 characters of your input to the substring starting at offset 5:</p>
+<pre class="language-cpp"><code class="language-cpp"><span class="token keyword">const</span> <span class="token keyword">char</span><span class="token operator">*</span> congrats <span class="token operator">=</span> <span class="token string">"What a beautiful password you have chosen for yourself!"</span><span class="token punctuation">;</span>
+<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">16</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>guessed<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> congrats<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code></pre>
+<p><code>congrats[5:21]</code> is <code>a beautiful pass</code>, so that’s the required password.</p>
+<h3>Password 3</h3>
+<p><code>checkPassword3</code> requires length 16, then checks each 4‑byte chunk against precomputed constants with a simple XOR/add transform.</p>
+<p>decompiled logic:</p>
+<pre class="language-cpp"><code class="language-cpp"><span class="token keyword">if</span> <span class="token punctuation">(</span>guessedPassword<span class="token operator">-></span>_Mypair<span class="token punctuation">.</span>_Myval2<span class="token punctuation">.</span>_Mysize <span class="token operator">!=</span> <span class="token number">16</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    std<span class="token double-colon punctuation">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Do not waste my time!"</span> <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+    <span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">uint32_t</span> correct<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token number">0x8f92b6d0</span><span class="token punctuation">,</span> <span class="token number">0x6b7c4aa9</span><span class="token punctuation">,</span> <span class="token number">0x8c5a89e5</span><span class="token punctuation">,</span> <span class="token number">0x629e8d6a</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token keyword">uint32_t</span> v4 <span class="token operator">=</span> <span class="token number">0x010203</span><span class="token punctuation">;</span> <span class="token comment">// 66051</span>
+<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">4</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">uint32_t</span> chunk <span class="token operator">=</span> <span class="token operator">*</span><span class="token punctuation">(</span><span class="token keyword">uint32_t</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>guessedPasswordBytes<span class="token punctuation">[</span>i <span class="token operator">*</span> <span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">// transform: (chunk ^ v4) + 0x23105c63 must equal correct[i]</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>correct<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token punctuation">(</span>chunk <span class="token operator">^</span> v4<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">0x23105c63</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        std<span class="token double-colon punctuation">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Please try again..."</span> <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+        <span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    v4 <span class="token operator">+=</span> <span class="token number">0x4040404</span><span class="token punctuation">;</span> <span class="token comment">// 67372036</span>
+<span class="token punctuation">}</span></code></pre>
+<p>reconstruction:</p>
+<pre class="language-python"><code class="language-python">correct <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1888201328</span><span class="token punctuation">,</span> <span class="token number">1803782281</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1940028283</span><span class="token punctuation">,</span> <span class="token number">1652777322</span><span class="token punctuation">]</span>
+v4 <span class="token operator">=</span> <span class="token number">66051</span>
+pw_bytes <span class="token operator">=</span> <span class="token string">b""</span>
+<span class="token keyword">for</span> i<span class="token punctuation">,</span> target <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>correct<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># mask to 32 bits to avoid negative to_bytes overflow</span>
+    val <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>target <span class="token operator">-</span> <span class="token number">589505315</span><span class="token punctuation">)</span> <span class="token operator">^</span> v4<span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token number">0xFFFFFFFF</span>
+    pw_bytes <span class="token operator">+=</span> val<span class="token punctuation">.</span>to_bytes<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token string">"little"</span><span class="token punctuation">,</span> signed<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+    v4 <span class="token operator">+=</span> <span class="token number">67372036</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>pw_bytes<span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># n0PlaceLik3aH0m3</span></code></pre>
+<h2>Fourth Password</h2>
+<p><code>checkPassword4</code> enforces:</p>
+<ul>
+<li>Length exactly 4</li>
+<li>Characters must be lowercase <code>a</code>–<code>z</code></li>
+</ul>
+<p>Then it calls <code>decrypt</code> on a 64-byte blob (<code>flag4</code>) using the four passwords as a key material. The decryption core is a custom 20-round Salsa-like function plus a per-byte subtraction of <code>0x111111 * char</code> for each of the 16 dwords.</p>
+<h3>Brute Force</h3>
+<p>Because the space is only 26^4 = 456,976, a direct brute force works. The following Python script feeds candidates into the binary and stops when a new flag appears:</p>
+<pre class="language-python"><code class="language-python"><span class="token keyword">import</span> itertools
+<span class="token keyword">import</span> string
+<span class="token keyword">import</span> subprocess
+<span class="token keyword">import</span> sys
+
+PASSWORDS <span class="token operator">=</span> <span class="token string">b"SuperSecretPass!\na beautiful pass\nn0PlaceLik3aH0m3\n"</span>
+KNOWN_FLAGS <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">b"FLAG{Strings_are_all_you_need}"</span><span class="token punctuation">,</span>
+    <span class="token string">b"FLAG{Start_the_day_on_the_right_offset}"</span><span class="token punctuation">,</span>
+    <span class="token string">b"FLAG{Don't_get_lost_on_your_way_home}"</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> idx<span class="token punctuation">,</span> cand <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">.</span>join<span class="token punctuation">,</span> itertools<span class="token punctuation">.</span>product<span class="token punctuation">(</span>string<span class="token punctuation">.</span>ascii_lowercase<span class="token punctuation">,</span> repeat<span class="token operator">=</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        data <span class="token operator">=</span> PASSWORDS <span class="token operator">+</span> cand<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">b"\n"</span>
+        <span class="token keyword">try</span><span class="token punctuation">:</span>
+            out <span class="token operator">=</span> subprocess<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">"./solveMe"</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token builtin">input</span><span class="token operator">=</span>data<span class="token punctuation">,</span> stdout<span class="token operator">=</span>subprocess<span class="token punctuation">.</span>PIPE<span class="token punctuation">,</span> stderr<span class="token operator">=</span>subprocess<span class="token punctuation">.</span>PIPE<span class="token punctuation">,</span> check<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">.</span>stdout
+        <span class="token keyword">except</span> subprocess<span class="token punctuation">.</span>CalledProcessError<span class="token punctuation">:</span>
+            <span class="token keyword">continue</span>
+
+        <span class="token keyword">for</span> line <span class="token keyword">in</span> out<span class="token punctuation">.</span>splitlines<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> line<span class="token punctuation">.</span>startswith<span class="token punctuation">(</span><span class="token string">b"FLAG{"</span><span class="token punctuation">)</span> <span class="token keyword">and</span> line <span class="token keyword">not</span> <span class="token keyword">in</span> KNOWN_FLAGS<span class="token punctuation">:</span>
+                <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"FOUND password=</span><span class="token interpolation"><span class="token punctuation">{</span>cand<span class="token punctuation">}</span></span><span class="token string"> flag=</span><span class="token interpolation"><span class="token punctuation">{</span>line<span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+                <span class="token keyword">return</span>
+
+        <span class="token keyword">if</span> idx <span class="token operator">%</span> <span class="token number">1000</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+            <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"\rtried </span><span class="token interpolation"><span class="token punctuation">{</span>idx<span class="token punctuation">:</span><span class="token format-spec">6d</span><span class="token punctuation">}</span></span><span class="token string"> candidates, last tested: </span><span class="token interpolation"><span class="token punctuation">{</span>cand<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">,</span> end<span class="token operator">=</span><span class="token string">""</span><span class="token punctuation">,</span> <span class="token builtin">file</span><span class="token operator">=</span>sys<span class="token punctuation">.</span>stderr<span class="token punctuation">,</span> flush<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">file</span><span class="token operator">=</span>sys<span class="token punctuation">.</span>stderr<span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    main<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>Running this finds:</p>
+<pre><code>FOUND password=qbit flag=FLAG{Brutus_doesnt_remember_passwords}
+</code></pre>
+
+  </div>
+</article>
+
+    </main>
+  </body>
+</html>
