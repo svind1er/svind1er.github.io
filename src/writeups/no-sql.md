@@ -1,7 +1,7 @@
 ---
 layout: layouts/post.njk
 title: "NoSQL"
-date: 2025-01-27
+date: 2025-12-25
 category: Web Exploitation
 difficulty: Easy
 tags: [ETJ2025]
