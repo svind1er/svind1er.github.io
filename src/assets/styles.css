@@ -92,17 +92,17 @@ pre {
 }
 
 .hero-title {
-  font-size: clamp(2.1rem, 4vw, 3.2rem);
-  margin: 0 0 24px;
+  font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+  margin: 0 0 18px;
   font-weight: 700;
   line-height: 1.05;
 }
 
 .hero-kicker {
-  font-size: clamp(1.35rem, 3.2vw, 2.2rem);
-  letter-spacing: 0.22em;
+  font-size: clamp(2.2rem, 6vw, 3.6rem);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .hero-handle {
@@ -113,20 +113,21 @@ pre {
 .hero-links {
   display: flex;
   justify-content: center;
-  margin: -6px 0 28px;
+  margin: -2px 0 26px;
 }
 
 .hero-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 8px 18px;
   border-radius: 999px;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   border: 1px solid rgba(250, 204, 21, 0.28);
   box-shadow: 0 12px 24px rgba(3, 7, 18, 0.35);
+  line-height: 1;
 }
 
 .hero-link:hover {
