@@ -59,7 +59,9 @@ module.exports = function(eleventyConfig) {
 
   eleventyConfig.addCollection("writeups", (collectionApi) => {
     return collectionApi.getFilteredByGlob("./src/writeups/*.md").sort((a, b) => {
-      return (b.date || 0) - (a.date || 0);
+      const aDate = a.data && a.data.date ? new Date(a.data.date) : a.date;
+      const bDate = b.data && b.data.date ? new Date(b.data.date) : b.date;
+      return (bDate || 0) - (aDate || 0);
     });
   });
 
