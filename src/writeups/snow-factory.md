@@ -171,5 +171,3 @@ JUL{3xpl01t1ng_th3_sn0w_f4ct0ry_f0r_fun_4nd_fun}
 - objdump/strings/nm/checksec
 
 ---
-
-**Tags:** #reverse-engineering #amd64 #JuleCTF2025

@@ -152,5 +152,3 @@ JUL{T3lep0Rting_Ar0uND_Th3_w0r1d!?}
 - **Network Analysis:** tshark/wireshark, Python (zlib, re)
 
 ---
-
-**Tags:** #forensics #pcap #minecraft #network-analysis
