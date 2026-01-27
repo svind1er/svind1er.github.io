@@ -328,7 +328,7 @@ pre {
   transition: transform 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 7px;
   overflow: hidden;
 }
 
@@ -358,7 +358,7 @@ pre {
 
 .writeup-card h3 {
   font-size: 1.15rem;
-  margin: 0 0 2px;
+  margin: 0;
   font-weight: 600;
   grid-column: 1;
   line-height: 1.1;
