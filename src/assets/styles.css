@@ -129,11 +129,6 @@ pre {
   box-shadow: 0 12px 24px rgba(3, 7, 18, 0.35);
 }
 
-.hero-link-icon {
-  width: 12px;
-  height: 12px;
-}
-
 .hero-link:hover {
   transform: translateY(-1px);
   border-color: rgba(253, 224, 71, 0.6);
