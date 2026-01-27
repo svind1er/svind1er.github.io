@@ -61,7 +61,9 @@ module.exports = function(eleventyConfig) {
     return collectionApi.getFilteredByGlob("./src/writeups/*.md").sort((a, b) => {
       const aDate = a.data && a.data.date ? new Date(a.data.date) : a.date;
       const bDate = b.data && b.data.date ? new Date(b.data.date) : b.date;
-      return (bDate || 0) - (aDate || 0);
+      const aTime = aDate instanceof Date && !Number.isNaN(aDate) ? aDate.getTime() : 0;
+      const bTime = bDate instanceof Date && !Number.isNaN(bDate) ? bDate.getTime() : 0;
+      return bTime - aTime;
     });
   });
 
