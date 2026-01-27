@@ -323,8 +323,8 @@ pre {
 }
 
 .writeup-card article {
-  padding: 18px 20px;
-  height: 240px;
+  padding: 16px 18px;
+  height: 220px;
   transition: transform 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
