@@ -89,6 +89,9 @@ pre {
 .hero-inner {
   width: min(896px, 92vw);
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .hero-title {
@@ -96,6 +99,7 @@ pre {
   margin: 0 0 12px;
   font-weight: 600;
   line-height: 1.05;
+  text-align: center;
 }
 
 .hero-kicker {
@@ -114,6 +118,7 @@ pre {
   display: flex;
   justify-content: center;
   margin: 6px 0 28px;
+  width: 100%;
 }
 
 .hero-link {
@@ -161,6 +166,7 @@ pre {
   justify-content: center;
   gap: 24px;
   margin-bottom: 32px;
+  width: 100%;
 }
 
 .stat.glass {
@@ -507,6 +513,8 @@ pre {
 
 .prose {
   max-width: 75ch;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .prose h1,
@@ -623,6 +631,8 @@ pre[class*="language-"] > code {
   padding: 0;
   margin: 0;
   display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 pre.shiki {
