@@ -75,5 +75,5 @@ print(r.recvall().decode(errors="replace"))
 ## Result
 
 ```bash
-Congratulations! Here is your flag: DDC{D3m0n1c_d1ct1on4ry_d3str0y3r}
+Congratulations! Here is your flag: DDC{...}
 ```
