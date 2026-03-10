@@ -1,8 +1,3 @@
-/* ═══════════════════════════════════════════════
-   TERMINAL THEME — SVINDLER.GITHUB.IO
-   Palette: Calm Teal  |  Font: Press Start 2P + Space Mono
-═══════════════════════════════════════════════ */
-
 :root {
   /* Color tokens — One Half Dark */
   --c-bg:          #1a1d23;
@@ -96,9 +91,9 @@ input:focus-visible {
   inset: 0;
   background: radial-gradient(
     ellipse at 50% 44%,
-    transparent 38%,
-    rgba(0, 0, 0, 0.38) 70%,
-    rgba(0, 0, 0, 0.68) 100%
+    transparent 45%,
+    rgba(0, 0, 0, 0.22) 72%,
+    rgba(0, 0, 0, 0.45) 100%
   );
 }
 
