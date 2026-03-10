@@ -23,9 +23,6 @@ layout: layouts/base.njk
       {% if category %}
       <span class="meta-pill">{{ category }}</span>
       {% endif %}
-      {% if difficulty %}
-      <span class="meta-pill">{{ difficulty }}</span>
-      {% endif %}
       {% if tags %}
       <div class="tag-row">
         {% for tag in tags %}
@@ -40,9 +37,19 @@ layout: layouts/base.njk
   </div>
 </article>
 <script>
-  window.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      window.location.href = "{{ "/#writeups" | url }}";
-    }
+  const backUrl = "{{ '/#writeups' | url }}";
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") window.location.href = backUrl;
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".post")) window.location.href = backUrl;
   });
 </script>
+<style>
+  body    { cursor: pointer; }
+  .post   { cursor: auto; }
+  .post * { cursor: auto; }
+  a, button, input, select, textarea { cursor: pointer; }
+</style>

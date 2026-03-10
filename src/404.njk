@@ -1,0 +1,150 @@
+---
+permalink: /404.html
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>404 — svindler</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: #1a1d23;
+    }
+
+    body {
+      font-family: 'Space Mono', monospace;
+      color: #abb2bf;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .crt-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9997;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.04) 2px,
+        rgba(0,0,0,0.04) 4px
+      );
+    }
+
+    .crt-overlay::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        ellipse at 50% 44%,
+        transparent 38%,
+        rgba(0,0,0,0.38) 70%,
+        rgba(0,0,0,0.68) 100%
+      );
+    }
+
+    .wrap {
+      width: min(400px, 88vw);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .err-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      color: #61afef;
+      letter-spacing: 0.06em;
+    }
+
+    .sep {
+      font-size: 12px;
+      color: #3e4451;
+      letter-spacing: -1px;
+    }
+
+    .line {
+      font-size: 12px;
+      color: #abb2bf;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .prompt { color: #85c1f5; margin-right: 8px; }
+    .dim    { color: #5c6370; }
+
+    .bar-wrap {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      letter-spacing: -1.5px;
+    }
+
+    .bar-wrap::before { content: '[ '; color: #5c6370; letter-spacing: 0; }
+    .bar-wrap::after  { content: ' ]'; color: #5c6370; letter-spacing: 0; }
+
+    #bar-fill  { color: #61afef; }
+    #bar-empty { color: #3e4451; }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    .cursor {
+      color: #61afef;
+      animation: blink 1s step-end infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="crt-overlay" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <div class="err-title">ERROR: 404</div>
+    <div class="sep">────────────────────────────────────</div>
+    <div class="line"><span class="prompt">&gt;</span><span>path not found</span></div>
+    <div class="line"><span class="prompt">&gt;</span><span>redirecting to home<span class="cursor">_</span></span></div>
+    <div class="sep">────────────────────────────────────</div>
+    <div class="bar-wrap"><span id="bar-fill"></span><span id="bar-empty"></span></div>
+  </div>
+
+  <script>
+    var fill  = document.getElementById('bar-fill');
+    var empty = document.getElementById('bar-empty');
+    var total = 28;
+
+    empty.textContent = '█'.repeat(total);
+
+    var start    = performance.now();
+    var duration = 2200;
+
+    function step(now) {
+      var progress = Math.min((now - start) / duration, 1);
+      var eased = progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      var filled = Math.round(eased * total);
+      fill.textContent  = '█'.repeat(filled);
+      empty.textContent = '█'.repeat(total - filled);
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        window.location.replace('/');
+      }
+    }
+
+    requestAnimationFrame(step);
+  </script>
+</body>
+</html>

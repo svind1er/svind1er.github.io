@@ -5,12 +5,10 @@ description: writeups n shi
 ---
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-kicker"><span class="hero-handle gradient-text">svindler</span></div>
-    <h1 class="hero-title">
-      <span class="gradient-text">Writeups</span>
-    </h1>
+    <div class="hero-kicker"><span class="hero-handle">svindler</span></div>
+    <h1 class="hero-title">ctf writeups &amp; research</h1>
     <div class="hero-links">
-      <a class="hero-link glass" href="https://linktr.ee/svindler">
+      <a class="hero-link" href="https://linktr.ee/svindler">
         Linktree
       </a>
     </div>
@@ -36,9 +34,9 @@ description: writeups n shi
     </div>
     <div class="search-wrap">
       <input
-        class="search-input glass"
+        class="search-input"
         type="search"
-        placeholder="Search writeups..."
+        placeholder="search writeups..."
         id="writeup-search"
         aria-label="Search writeups"
       />
@@ -48,7 +46,7 @@ description: writeups n shi
 
 <section id="writeups" class="filters">
   <div class="filters-group">
-    <span class="filters-label">Categories:</span>
+    <span class="filters-label">Categories</span>
     <div class="filters-row">
       <button class="chip chip-active js-category" data-category="all">All</button>
       {% for category in collections.categories %}
@@ -57,7 +55,7 @@ description: writeups n shi
     </div>
   </div>
   <div class="filters-group">
-    <span class="filters-label">Events:</span>
+    <span class="filters-label">Events</span>
     <div class="filters-row tags">
       {% for tag in collections.tagsList %}
       <button class="chip chip-tag js-tag" data-tag="{{ tag }}">{{ tag }}</button>
@@ -77,7 +75,7 @@ description: writeups n shi
       data-title="{{ post.data.title | lower }}"
       data-description="{{ post.data.description | default('') | lower }}"
     >
-      <article class="glass">
+      <article>
         <div class="badge">{{ post.data.category | default('CTF') }}</div>
         <h3>{{ post.data.title }}</h3>
         <p>{{ post.data.description | default('') }}</p>
@@ -92,14 +90,7 @@ description: writeups n shi
           <span class="meta-item">
             {{ post.date | date("%b %d, %Y") }}
           </span>
-          {% if post.data.difficulty %}
-          <span class="meta-item">
-            {{ post.data.difficulty }}
-          </span>
-          {% endif %}
-          <span class="meta-arrow">
-            →
-          </span>
+          <span class="meta-arrow">→</span>
         </div>
       </article>
     </a>
@@ -146,9 +137,7 @@ description: writeups n shi
 
       const show = matchesSearch && matchesCategory && matchesTags;
       card.style.display = show ? "block" : "none";
-      if (show) {
-        visible += 1;
-      }
+      if (show) visible += 1;
     });
 
     results.textContent = `Showing ${visible} of ${cards.length} writeups`;
@@ -178,4 +167,5 @@ description: writeups n shi
   });
 
   searchInput.addEventListener("input", applyFilters);
+
 </script>

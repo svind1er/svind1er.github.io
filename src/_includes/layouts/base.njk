@@ -13,17 +13,95 @@
   <meta name="twitter:title" content="svindler" />
   <meta name="twitter:description" content="{{ description | default('writeups n shi') }}" />
   <link rel="icon" href="{{ "/assets/icon.png" | url }}" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{{ "/assets/styles.css" | url | cacheBust("src/assets/styles.css") }}" />
   <link rel="stylesheet" href="{{ "/assets/prism.css" | url | cacheBust("src/assets/prism.css") }}" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
 </head>
 
 <body>
-  <div class="page-bg"></div>
-  <header class="site-header" aria-hidden="true"></header>
+  <div class="crt-overlay" aria-hidden="true"></div>
+
+  <div class="boot-screen" id="boot-screen" aria-hidden="true">
+    <div class="boot-content">
+      <div class="boot-label">
+        <span class="boot-prompt">&gt;</span><span class="boot-typed" id="boot-typed"></span><span class="boot-cursor" id="boot-cursor">_</span>
+      </div>
+      <div class="boot-bar-terminal" id="boot-bar-wrap">
+        <span id="boot-bar-fill"></span><span class="boot-bar-empty" id="boot-bar-empty"></span>
+      </div>
+    </div>
+  </div>
+
   <main class="container">
     {{ content | safe }}
   </main>
+
+  <script>
+    (function () {
+      try {
+        if (sessionStorage.getItem('bootseq')) return;
+        sessionStorage.setItem('bootseq', '1');
+      } catch (e) {
+        return;
+      }
+
+      var screen  = document.getElementById('boot-screen');
+      var typed   = document.getElementById('boot-typed');
+      var cursor  = document.getElementById('boot-cursor');
+      var barWrap = document.getElementById('boot-bar-wrap');
+      var fill    = document.getElementById('boot-bar-fill');
+      var empty   = document.getElementById('boot-bar-empty');
+
+      screen.style.display = 'flex';
+
+      var text   = 'ls writeups';
+      var total  = 28;
+      empty.textContent = '█'.repeat(total);
+
+      function startBar() {
+        barWrap.style.visibility = 'visible';
+        var start    = performance.now();
+        var duration = 1500;
+        function step(now) {
+          var progress = Math.min((now - start) / duration, 1);
+          var eased = progress < 0.5
+            ? 2 * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+          var filled = Math.round(eased * total);
+          fill.textContent  = '█'.repeat(filled);
+          empty.textContent = '█'.repeat(total - filled);
+          if (progress < 1) {
+            requestAnimationFrame(step);
+          } else {
+            setTimeout(function () {
+              screen.classList.add('boot-fade');
+              setTimeout(function () { screen.style.display = 'none'; }, 500);
+            }, 180);
+          }
+        }
+        requestAnimationFrame(step);
+      }
+
+      function startTyping() {
+        cursor.classList.add('no-blink');
+        var i = 0;
+        var interval = setInterval(function () {
+          typed.textContent = text.slice(0, i + 1);
+          i++;
+          if (i >= text.length) {
+            clearInterval(interval);
+            cursor.classList.remove('no-blink');
+            setTimeout(startBar, 500);
+          }
+        }, 60);
+      }
+
+      setTimeout(startTyping, 700);
+    })();
+  </script>
 </body>
 
 </html>
