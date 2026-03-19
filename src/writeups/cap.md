@@ -37,7 +37,7 @@ Clicking capture redirected me to `/data/1`. The numeric ID in the URL suggested
 ffuf -u "http://10.129.13.106/data/FUZZ" -w <(seq 0 1000) -mc 200
 ```
 
-Three IDs returned `200`: `0`, `1`, and `2`. The rest redirected. `/data/0` was larger than the others, suggesting it contained different data — someone else's capture.
+Three IDs returned `200`: `0`, `1`, and `2`. The rest redirected. `/data/0` was larger than the others, suggesting it contained different data; might be someone else's capture.
 
 ## Foothold
 
@@ -73,7 +73,7 @@ getcap /usr/bin/python3* 2>/dev/null
 /usr/bin/python3.8 = cap_setuid,cap_net_bind_service+eip
 ```
 
-Before SSH, I used FTP to browse the filesystem and read `/var/www/html/app.py`. The `/capture` route stood out — it spawns a subprocess that calls `os.setuid(0)` before running tcpdump, meaning python3 must have `cap_setuid`. That same capability gives us root:
+Before SSH, I used FTP to browse the filesystem and read `/var/www/html/app.py`. The `/capture` route stood out; it spawns a subprocess that calls `os.setuid(0)` before running tcpdump, meaning python3 must have `cap_setuid`. That same capability gives us root:
 
 Instant root:
 
